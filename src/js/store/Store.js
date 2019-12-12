@@ -2,6 +2,7 @@ import { createStore, combineReducers } from 'redux';
 import ActionTypes from './ActionTypes';
 import joint from 'jointjs';
 import _ from 'lodash';
+import ToolDefinitions from '../components/molecules/Editor/ToolDefinitions';
 
 const rootReducer = combineReducers({ editor: Editor });
 
@@ -54,7 +55,18 @@ function Editor(state, action) {
             },
             handleHeld: false,
             handle: ""
-        }
+        },
+        // Store references to different graphs and papers.
+        currGraph: {
+            label: "",
+            graph: null
+        },
+        graphs: {
+            general: null,
+            asset: null
+        },
+        // stores the list of icons to be displayed
+        currentShapes: []
     };
 
     const newState = Object.assign({}, state);
@@ -161,7 +173,7 @@ function Editor(state, action) {
             return newState;
         
         case ActionTypes.EDITOR.TOOL_TAB_SELECTED:
-            newState.editorToolSection = action.payload.tabNo;
+            newState.editorToolSection = action.payload;
             return newState;
 
         case ActionTypes.EDITOR.MENU_CLEAR_CLICKED:
@@ -201,6 +213,36 @@ function Editor(state, action) {
         case ActionTypes.EDITOR.CELL_HANDLE_MOVED:
             if(state.cellTool.handleHeld) newState.cellTool.size = action.payload;
             return newState;
+        // Modifies graph
+        case ActionTypes.EDITOR.CLEAR_GRAPH:
+            newState.graphs[action.payload] = null;
+            return newState;
+
+        case ActionTypes.EDITOR.SET_GRAPH:
+            console.log("SET_GRAPH");
+            let { label, graph } = action.payload;
+            newState.graphs[label] = graph;
+            return newState;
+
+        case ActionTypes.EDITOR.SET_CURR_GRAPH:
+            console.log("SET_CURR_GRAPH");
+            newState.currGraph.label = action.payload.label;
+            newState.currGraph.graph = action.payload.graph;
+
+            newState.currentShapes = ToolDefinitions[newState.editorToolSection].shapes.filter((shape) => {
+                return shape.existsIn[newState.currGraph.label];
+            });
+            //newState.paper.paper.model = action.payload.graph; //hmm
+            return newState;
+
+        case ActionTypes.EDITOR.SET_PAPER:
+            //newState.paper = action.payload;
+            return newState;
+
+        case ActionTypes.EDITOR.SET_CURR_SHAPES:
+            newState.currentShapes = action.payload;
+            return newState;
+
     }
 }
 

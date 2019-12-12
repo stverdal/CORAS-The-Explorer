@@ -17,13 +17,17 @@ import {
     CellClicked,
     CellHandleClicked,
     CellHandleRelased,
-    CellHandleMoved
+    CellHandleMoved,
+    SetGraph,
+    SetCurrGraph,
+    SetPaper
 } from '../../../store/Actions';
 
 import Modal from '../../atoms/Modal/Modal';
 
 import ElementEditor from './ElementEditor';
 import EditorTool from './EditorTool';
+import DiagramSelector from './DiagramSelector';
 import CellTool from './CellTool';
 
 import "../../../../../node_modules/jointjs/dist/joint.css";
@@ -68,6 +72,7 @@ class Editor extends React.Component {
         this.loadGraphFromFile = this.loadGraphFromFile.bind(this);
         this.clearGraph = this.clearGraph.bind(this);
         this.downloadSvg = this.downloadSvg.bind(this);
+        this.changeGraph = this.changeGraph.bind(this);
 
         this.paperId = this.props.paperId || 'paper-holder';
         this.paperWrapperId = `${this.paperId}-wrapper`;
@@ -84,12 +89,19 @@ class Editor extends React.Component {
         return window.localStorage.getItem(this.paperId + "graph");
     }
 
+
+    // set this.paper to store.currpaper
+    // create new paper on first opening of new tab?
     componentDidMount() {
         const arrowheadShape = 'M 10 0 L 0 5 L 10 10 z';
 
+        //may need to cause a rerender
+        //this.paper = this.props.currPaper.paper;
+        //console.log(this.paper);
+        var graph = new joint.dia.Graph();
         this.paper = new joint.dia.Paper({
             el: document.getElementById(this.paperId),
-            model: this.graph,
+            model: this.graph, // change
             width: document.getElementById(this.paperWrapperId).offsetWidth - 10,
             height: document.getElementById(this.paperWrapperId).offsetHeight - 10,
             gridSize: 1,
@@ -107,11 +119,11 @@ class Editor extends React.Component {
         });
 
         // Load graph from localStorage or props
-        if (this.getFromLocalStorage()) this.graph.fromJSON(JSON.parse(this.getFromLocalStorage()));
-        else if (this.props.initialDiagram) this.graph.fromJSON(this.props.initialDiagram);
+        //if (this.getFromLocalStorage()) this.graph.fromJSON(JSON.parse(this.getFromLocalStorage()));
+        //else if (this.props.initialDiagram) this.graph.fromJSON(this.props.initialDiagram);
 
         // Save in localStorage on change (or rather, every second currently)
-        this.periodicalSave = setInterval(this.saveToLocalStorage, 1000);
+        //this.periodicalSave = setInterval(this.saveToLocalStorage, 1000);
 
         window.addEventListener('resize', this.updatePaperSize);
 
@@ -126,6 +138,11 @@ class Editor extends React.Component {
             this.paper.on('blank:pointermove', this.movePaper);
             this.paper.on('blank:pointerup', this.endMovePaper);
         }
+        //this.props.setPaper(paper);
+        //.props.setGraph('general', this.graph);
+        //this.props.setCurrGraph('general', this.graph);
+        this.props.setGraph('general', this.graph.toJSON());
+        this.props.setCurrGraph('general', this.graph.toJSON());
     }
 
     componentWillUnmount() {
@@ -141,10 +158,12 @@ class Editor extends React.Component {
             const newX = currentScale.sx * scaleFactor > 5 ? currentScale.sx : currentScale.sx * scaleFactor;
             const newY = currentScale.sy * scaleFactor > 5 ? currentScale.sy : currentScale.sy * scaleFactor;
             this.paper.scale(newX, newY);
+            //this.props.paper.paper.scale(newX, newY);
         } else if (delta < 0) {
             const newX = currentScale.sx / scaleFactor < 0.52 ? currentScale.sx : currentScale.sx / scaleFactor;
             const newY = currentScale.sy / scaleFactor < 0.52 ? currentScale.sy : currentScale.sy / scaleFactor;
             this.paper.scale(newX, newY);
+            //this.props.paper.paper.scale(newX, newY);
         }
     }
 
@@ -155,7 +174,7 @@ class Editor extends React.Component {
     beginMovePaper(e, x, y) {
         this.setState({ paperMove: { moving: true, x, y } });
     }
-
+    
     movePaper(e, x, y) {
         if (this.state.paperMove.moving) {
             const { tx, ty } = this.paper.translate();
@@ -168,6 +187,7 @@ class Editor extends React.Component {
     }
 
     updatePaperSize() {
+        //this.props.paper.paper.setDimensions(
         this.paper.setDimensions(
             document.getElementById(this.paperWrapperId).offsetWidth - 10,
             document.getElementById(this.paperWrapperId).offsetHeight - 10);
@@ -181,16 +201,28 @@ class Editor extends React.Component {
         } else this.setState({ linkToRemove: null });
     }
 
+    /*
     paperOnMouseUp(e) {
         e.preventDefault();
         const localPoint = this.paper.pageToLocalPoint(e.pageX, e.pageY);
         this.props.elementDropped(this.graph, localPoint.x, localPoint.y);
+    }*/
+
+    paperOnMouseUp(e) {
+        e.preventDefault();
+        //const localPoint = this.props.paper.paper.pageToLocalPoint(e.pageX, e.pageY);
+        //this.props.elementDropped(this.props.paper.paper.model, localPoint.x, localPoint.y);
+        const localPoint = this.paper.pageToLocalPoint(e.pageX, e.pageY);
+        this.props.elementDropped(this.paper.model, localPoint.x, localPoint.y);
     }
+
+
 
     saveGraphToFile(e) {
         e.preventDefault();
         const a = document.createElement('a');
         const graphContent = new Blob([JSON.stringify(this.graph.toJSON(), null, 2)], { type: 'text/plain' });
+        //const graphContent = new Blob([JSON.stringify(this.props.paper.paper.model.toJSON(), null, 2)], { type: 'text/plain' });
         a.href = URL.createObjectURL(graphContent);
         a.download = "CORASDiagram.json";
         a.click();
@@ -202,6 +234,7 @@ class Editor extends React.Component {
         const reader = new FileReader();
         if (filePath.files && filePath.files[0]) {
             reader.addEventListener('load', (e) => this.graph.fromJSON(JSON.parse(e.target.result)), { once: true });
+            //reader.addEventListener('load', (e) => this.props.paper.paper.model.fromJSON(JSON.parse(e.target.result)), { once: true });
             reader.readAsText(filePath.files[0]);
             filePath.value = "";
         }
@@ -209,13 +242,16 @@ class Editor extends React.Component {
 
     clearGraph(e) {
         this.graph.clear();
+        //this.props.paper.paper.model.clear();
         window.localStorage.removeItem(this.paperId + "graph");
         if (this.props.initialDiagram) this.graph.fromJSON(this.props.initialDiagram);
+        //if (this.props.initialDiagram) this.props.paper.paper.model.fromJSON(this.props.initialDiagram);
         this.props.clearConfirmed();
     }
 
     downloadSvg() {
         let svgElement = this.paper.svg;
+        //let svgElement = this.props.paper.paper.svg;
 
         // Remove link tools from downloaded SVG
         const toolElems = svgElement.getElementsByClassName("link-tools");
@@ -268,7 +304,18 @@ class Editor extends React.Component {
         if(this.props.cellTool.handleHeld) this.props.cellHandleMoved(this.props.cellToolWidth, newHeight);
     }
 
+    // not sure how to do through redux
+    changeGraph(label, graph) {
+        //assume that graph is JSONgraph
+        this.props.setGraph(this.props.currGraph.label, this.graph.toJSON());
+        this.props.setCurrGraph(label, graph.toJSON());
+        //this.paper.model = graph; 
+        this.graph.fromJSON(graph.toJSON());
+        console.log(graph);
+    }
+
     render() {
+        // No need to send tooldef as prop as far as i can see
         return (
             <div className="editor-wrapper">
                 <EditorMenu
@@ -281,6 +328,18 @@ class Editor extends React.Component {
                     clearPosition={this.props.clearPosition}
                     clearClicked={this.props.clearClicked}
                     downloadFn={this.downloadSvg} />
+                <DiagramSelector
+                    paperId={this.paperId}
+                    paperWrapperId={this.paperWrapperId}
+                    isInteractive={this.props.interactive}
+                    handleScroll={this.handleScroll}
+                    handleScrollBlank={this.handleScrollBlank}
+                    beginMovePaper={this.beginMovePaper}
+                    movePaper={this.movePaper}
+                    endMovePaper={this.endMovePaper}
+                    updatePaperSize={this.updatePaperSize}
+                    changeGraph={this.changeGraph}
+                />
                 {this.props.elementEditor.visible ? <ElementEditor
                     {...this.props.elementEditor.data}
                     cancel={this.props.elementEditorCancel}
@@ -301,7 +360,7 @@ class Editor extends React.Component {
                     <div id={this.paperId}></div>
                 </div>
                 {this.props.interactive || this.props.interactive === undefined ?
-                    <EditorTool toolDefinitions={ToolDefinitions} /> : null}
+                    <EditorTool toolDefinitions={ToolDefinitions} paper={this.paper} /> : null}
             </div>);
     }
 }
@@ -324,15 +383,15 @@ const EditorMenu = ({ loadStartFn, loadRef, loadFn, saveFn, clearFn, showClearMo
         <button className="editor-menu__button" onClick={downloadFn}>Download (SVG)</button>
     </div>;
 
-
-
 export default connect((state) => ({
     elementEditor: state.editor.elementEditor,
     showClearModal: state.editor.editorMenu.showClearModal,
     clearPosition: state.editor.editorMenu.clearPosition,
     cellTool: state.editor.cellTool,
     cellToolWidth: state.editor.cellTool.size.width,
-    cellToolHeight: state.editor.cellTool.size.height
+    cellToolHeight: state.editor.cellTool.size.height,
+    currGraph: state.editor.currGraph,
+    paper: state.editor.paper
 }), (dispatch) => ({
     elementRightClicked: (element, graph) => dispatch(ElementRightClicked(element, graph)),
     elementDoubleClicked: (element, event) => dispatch(ElementDoubleClicked(element, event)),
@@ -349,5 +408,9 @@ export default connect((state) => ({
     cellClicked: (x, y, width, height) => dispatch(CellClicked(x, y, width, height)),
     cellHandleClicked: (handle) => dispatch(CellHandleClicked(handle)),
     cellHandleReleased: () => dispatch(CellHandleRelased()),
-    cellHandleMoved: (width, height) => dispatch(CellHandleMoved(width, height))
+    cellHandleMoved: (width, height) => dispatch(CellHandleMoved(width, height)),
+    clearGraph: (label) => dispatch(ClearGraph(label)),
+    setGraph: (label, graph) => dispatch(SetGraph(label, graph)),
+    setCurrGraph: (label, graph) => dispatch(SetCurrGraph(label, graph)),
+    setPaper: (paper) => dispatch(SetPaper(paper))
 }))(Editor);

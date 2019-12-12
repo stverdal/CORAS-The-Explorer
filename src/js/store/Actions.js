@@ -57,7 +57,7 @@ export const ToolElementRelease = (graph, pageX, pageY) => ({
 
 export const ToolTabSelected = (tabNo) => ({
     type: ActionTypes.EDITOR.TOOL_TAB_SELECTED,
-    payload: { tabNo }
+    payload: { tabNo}
 });
 
 export const MenuClearClicked = (e) => ({
@@ -86,4 +86,29 @@ export const CellHandleRelased = () => ({
 export const CellHandleMoved = (width, height) => ({
     type: ActionTypes.EDITOR.CELL_HANDLE_MOVED,
     payload: { width, height }
+});
+
+export const ClearGraph = (label) => ({
+    type: ActionTypes.EDITOR.CLEAR_GRAPH,
+    payload: { label }
+});
+
+export const SetGraph = (label, graph) => ({
+    type: ActionTypes.EDITOR.SET_GRAPH,
+    payload: { label, graph }
+});
+
+export const SetCurrGraph = (label, graph) => ({
+    type: ActionTypes.EDITOR.SET_CURR_GRAPH,
+    payload: { label, graph }
+});
+
+export const SetPaper = (paper) => ({
+    type: ActionTypes.EDITOR.SET_PAPER,
+    payload: { paper }
+});
+
+export const SetCurrShapes = (shapes) => ({
+    type: ActionTypes.EDITOR.SET_CURR_SHAPES,
+    payload: { shapes }
 });

@@ -25,19 +25,19 @@
   "dependencies": {
     "backbone": "^1.3.3",
     "gojs": "^1.8.18",
-    "jointjs": "^2.1.4",
+    "jointjs": "^2.2.1",
     "jquery": "^3.3.1",
     "jshint": "^2.9.5",
-    "lodash": "^4.17.11",
-    "react": "^16.4.1",
-    "react-dom": "^16.3.2",
-    "react-redux": "^5.0.7",
-    "react-router-dom": "^4.2.2",
-    "redux": "^4.0.0"
+    "lodash": "^4.17.15",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-redux": "^5.1.2",
+    "react-router-dom": "^4.3.1",
+    "redux": "^4.0.4"
   },
   "devDependencies": {
     "eslint": "^4.19.1",
-    "firebase-tools": "^3.19.0",
-    "parcel-bundler": "^1.8.1"
+    "firebase-tools": "^3.19.3",
+    "parcel-bundler": "^1.12.4"
   }
 }

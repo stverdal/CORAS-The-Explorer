@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { ToolElementClicked, ToolTabSelected } from '../../../store/Actions';
 import './editortool.css';
@@ -28,20 +28,27 @@ const EditorToolBar = ({ beginMoveElement, svgs }) =>
             null}
     </div>;
 
-const EditorTool = ({ beginMoveElement, toolDefinitions, selectedTab, selectTab }) =>
-    <div className="editor-tools">
-        <div className="editor-tabrow">
-            {toolDefinitions.map((toolDefinition, i) => 
-                <a onClick={() => selectTab(i)} key={i} className="editor-tabrow__tablink">
-                    <div className={`editor-tabrow__tab${i === selectedTab ? " editor-tabrow__tab--selected" : ""}`}>{toolDefinition.name}</div>
-                </a>)}
+const EditorTool = ({ beginMoveElement, toolDefinitions, selectedTab, selectTab, paper, currentShapes }) => {
+
+
+    return (
+        <div className="editor-tools">
+            <div className="editor-tabrow">
+                {toolDefinitions.map((toolDefinition, i) =>
+                    <a onClick={() => selectTab(paper, i, toolDefinition.name)} key={i} className="editor-tabrow__tablink">
+                        <div className={`editor-tabrow__tab${i === selectedTab ? " editor-tabrow__tab--selected" : ""}`}>{toolDefinition.name}</div>
+                    </a>)}
+            </div>
+            <EditorToolBar beginMoveElement={beginMoveElement} svgs={currentShapes} />
         </div>
-        <EditorToolBar beginMoveElement={beginMoveElement} svgs={toolDefinitions[selectedTab].shapes} />
-    </div>;
+    );
+};
 
 export default connect((state) => ({
-    selectedTab: state.editor.editorToolSection
+    selectedTab: state.editor.editorToolSection,
+    currGraph: state.editor.currGraph,
+    currentShapes: state.editor.currentShapes
 }), (dispatch) => ({
     beginMoveElement: (element, width, height) => dispatch(ToolElementClicked(element, width, height)),
-    selectTab: (tabNo) => dispatch(ToolTabSelected(tabNo))
+    selectTab: (currPaper, newTabNo, name) => dispatch(ToolTabSelected(currPaper, newTabNo, name))
 }))(EditorTool);
