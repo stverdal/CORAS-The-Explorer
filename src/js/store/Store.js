@@ -66,7 +66,11 @@ function Editor(state, action) {
             asset: null
         },
         // stores the list of icons to be displayed
-        currentShapes: []
+        currentShapes: [],
+        diagramTypes: [
+            "general",
+            "asset"
+        ]
     };
 
     const newState = Object.assign({}, state);
@@ -173,7 +177,10 @@ function Editor(state, action) {
             return newState;
         
         case ActionTypes.EDITOR.TOOL_TAB_SELECTED:
-            newState.editorToolSection = action.payload;
+            newState.editorToolSection = action.payload.tabNo;
+            newState.currentShapes = ToolDefinitions[newState.editorToolSection].shapes.filter((shape) => {
+                return shape.existsIn[newState.currGraph.label];
+            });
             return newState;
 
         case ActionTypes.EDITOR.MENU_CLEAR_CLICKED:

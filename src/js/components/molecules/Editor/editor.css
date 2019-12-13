@@ -4,7 +4,9 @@
 .editor-paper {
     border: solid 1px #000;
     height: 80%;
-    margin: 1rem;
+    margin-bottom: 1rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
     position: relative;
 }
 

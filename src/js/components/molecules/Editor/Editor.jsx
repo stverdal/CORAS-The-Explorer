@@ -82,11 +82,21 @@ class Editor extends React.Component {
     }
 
     saveToLocalStorage() {
-        window.localStorage.setItem(this.paperId + "graph", JSON.stringify(this.graph.toJSON()))
+        // might want to update redux state here, or update store more frequently
+        window.localStorage.setItem(this.paperId + "graph_" + this.props.currGraph.label, JSON.stringify(this.graph.toJSON()));
     }
 
     getFromLocalStorage() {
-        return window.localStorage.getItem(this.paperId + "graph");
+        console.log(this.props.currGraph.label);
+        var storedGraph = null;
+        this.props.diagramTypes.map((type, i) => {
+            storedGraph = window.localStorage.getItem(this.paperId + "graph_" + type);
+            if (storedGraph) {
+                this.props.setGraph(type, JSON.parse(storedGraph));
+            }
+        });
+        // a bit hardcoded, return general graph if it exists
+        return window.localStorage.getItem(this.paperId + "graph_" + this.props.diagramTypes[0]);
     }
 
 
@@ -119,11 +129,13 @@ class Editor extends React.Component {
         });
 
         // Load graph from localStorage or props
-        //if (this.getFromLocalStorage()) this.graph.fromJSON(JSON.parse(this.getFromLocalStorage()));
-        //else if (this.props.initialDiagram) this.graph.fromJSON(this.props.initialDiagram);
+        this.getFromLocalStorage();
+        // always present general at reload
+        if (this.getFromLocalStorage()) this.graph.fromJSON(JSON.parse(this.getFromLocalStorage()));
+        else if (this.props.initialDiagram) this.graph.fromJSON(this.props.initialDiagram);
 
         // Save in localStorage on change (or rather, every second currently)
-        //this.periodicalSave = setInterval(this.saveToLocalStorage, 1000);
+        this.periodicalSave = setInterval(this.saveToLocalStorage, 1000);
 
         window.addEventListener('resize', this.updatePaperSize);
 
@@ -141,7 +153,7 @@ class Editor extends React.Component {
         //this.props.setPaper(paper);
         //.props.setGraph('general', this.graph);
         //this.props.setCurrGraph('general', this.graph);
-        this.props.setGraph('general', this.graph.toJSON());
+        //this.props.setGraph('general', this.graph.toJSON());
         this.props.setCurrGraph('general', this.graph.toJSON());
     }
 
@@ -243,7 +255,7 @@ class Editor extends React.Component {
     clearGraph(e) {
         this.graph.clear();
         //this.props.paper.paper.model.clear();
-        window.localStorage.removeItem(this.paperId + "graph");
+        window.localStorage.removeItem(this.paperId + "graph_" + this.props.currGraph.label);
         if (this.props.initialDiagram) this.graph.fromJSON(this.props.initialDiagram);
         //if (this.props.initialDiagram) this.props.paper.paper.model.fromJSON(this.props.initialDiagram);
         this.props.clearConfirmed();
@@ -391,7 +403,8 @@ export default connect((state) => ({
     cellToolWidth: state.editor.cellTool.size.width,
     cellToolHeight: state.editor.cellTool.size.height,
     currGraph: state.editor.currGraph,
-    paper: state.editor.paper
+    diagramTypes: state.editor.diagramTypes
+
 }), (dispatch) => ({
     elementRightClicked: (element, graph) => dispatch(ElementRightClicked(element, graph)),
     elementDoubleClicked: (element, event) => dispatch(ElementDoubleClicked(element, event)),

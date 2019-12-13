@@ -57,7 +57,7 @@ export const ToolElementRelease = (graph, pageX, pageY) => ({
 
 export const ToolTabSelected = (tabNo) => ({
     type: ActionTypes.EDITOR.TOOL_TAB_SELECTED,
-    payload: { tabNo}
+    payload: { tabNo }
 });
 
 export const MenuClearClicked = (e) => ({

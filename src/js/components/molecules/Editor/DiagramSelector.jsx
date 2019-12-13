@@ -10,16 +10,14 @@ import {
 
 import "../../../../../node_modules/jointjs/dist/joint.css";
 import './editor.css';
+import './diagramselector.css';
 
 import AddCorasShapes from './CORASShapes.js';
 
 AddCorasShapes(joint);
 
 
-const DiagramSelector = ({ graphs, currGraph, setGraph,  changeGraph,  }) => {
-    // Hardcoded for now, recieve list of diagram options and map through later
-    const diagramOptions = ['general', 'asset'];
-
+const DiagramSelector = ({ graphs, currGraph, setGraph, changeGraph, selectedTab, diagramOptions }) => {
 
     const switchDiagram = diagramLabel => {
         //check if diagram exists
@@ -33,7 +31,6 @@ const DiagramSelector = ({ graphs, currGraph, setGraph,  changeGraph,  }) => {
         if (graphs[diagramLabel] === null) {
             graph = new joint.dia.Graph();
             setGraph(diagramLabel, graph.toJSON());
-            console.log("HELOOOOOOOOOO");
         } else {
             graph.fromJSON(graphs[diagramLabel]);
         }
@@ -43,16 +40,16 @@ const DiagramSelector = ({ graphs, currGraph, setGraph,  changeGraph,  }) => {
     };
 
     return (
-        <div className="diagram-selector">
+        <div className="diagram-tabrow">
             {diagramOptions.map((currElem, i) =>
-                <button
-                    className="diagram-selector_button"
+                <a
+                    onClick={() => switchDiagram(currElem)}
                     key={i}
-                    value={diagramOptions[i]}
-                    onClick={() => switchDiagram(diagramOptions[i])}
-                >
-                    {diagramOptions[i]}
-                </button>
+                    className="diagram-tabrow__tablink">
+                    <div
+                        className={`diagram-tabrow__tab${currElem === selectedTab ? " diagram-tabrow__tab--selected" : ""}`}>{currElem}
+                    </div>
+                </a>
             )}
         </div>
     );
@@ -61,6 +58,8 @@ const DiagramSelector = ({ graphs, currGraph, setGraph,  changeGraph,  }) => {
 export default connect((state) => ({
     graphs: state.editor.graphs,
     currGraph: state.editor.currGraph,
+    selectedTab: state.editor.currGraph.label,
+    diagramOptions: state.editor.diagramTypes,
     paper: state.editor.paper
 }), (dispatch) => ({
     elementDoubleClicked: (element, event) => dispatch(ElementDoubleClicked(element, event)),

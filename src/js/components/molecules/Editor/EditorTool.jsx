@@ -35,7 +35,7 @@ const EditorTool = ({ beginMoveElement, toolDefinitions, selectedTab, selectTab,
         <div className="editor-tools">
             <div className="editor-tabrow">
                 {toolDefinitions.map((toolDefinition, i) =>
-                    <a onClick={() => selectTab(paper, i, toolDefinition.name)} key={i} className="editor-tabrow__tablink">
+                    <a onClick={() => selectTab(i)} key={i} className="editor-tabrow__tablink">
                         <div className={`editor-tabrow__tab${i === selectedTab ? " editor-tabrow__tab--selected" : ""}`}>{toolDefinition.name}</div>
                     </a>)}
             </div>
@@ -50,5 +50,5 @@ export default connect((state) => ({
     currentShapes: state.editor.currentShapes
 }), (dispatch) => ({
     beginMoveElement: (element, width, height) => dispatch(ToolElementClicked(element, width, height)),
-    selectTab: (currPaper, newTabNo, name) => dispatch(ToolTabSelected(currPaper, newTabNo, name))
+    selectTab: (tabNo) => dispatch(ToolTabSelected(tabNo))
 }))(EditorTool);

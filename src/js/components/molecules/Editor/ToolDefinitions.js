@@ -238,6 +238,10 @@ export default [
                     0: { "icon/href": assetSymbol, "icon/height": assetHeight },
                     1: { "icon/href": assetSymbolOutlined, "icon/height": assetHeight },
                     2: { "icon/href": assetSymbolShaded, "icon/height": assetHeight }
+                },
+                existsIn: {
+                    general: true,
+                    asset: true
                 }
             },
             {
@@ -252,6 +256,9 @@ export default [
                     0: { "icon/href": indirectAssetSymbol, "icon/height": indirectHeight },
                     1: { "icon/href": indirectAssetSymbolOutlined, "icon/height": indirectHeight },
                     2: { "icon/href": indirectAssetSymbolShaded, "icon/height": indirectHeight }
+                },
+                existsIn: {
+                    asset: true
                 }
             },
             {
@@ -266,6 +273,9 @@ export default [
                     0: { "icon/href": riskSymbol, "icon/height": riskHeight },
                     1: { "icon/href": riskSymbolOutlined, "icon/height": riskHeight },
                     2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -280,6 +290,9 @@ export default [
                     0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight},
                     1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight},
                     2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
+                },
+                existsIn: {
+                    asset: true
                 }
             },
             {
@@ -294,6 +307,9 @@ export default [
                     0: { "icon/href": threatHumanAccidentalSymbol, "icon/height": accidentalHeight },
                     1: { "icon/href":threatHumanAccidentalSymbolOutline, "icon/height": accidentalHeight },
                     2: { "icon/href": threatHumanAccidentalSymbolShadow, "icon/height": accidentalHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -308,6 +324,9 @@ export default [
                     0: { "icon/href": threatHumanDeliberateSymbol, "icon/height": deliberateHeight },
                     1: { "icon/href": threatHumanDeliberateSymbolOutlined, "icon/height": deliberateHeight },
                     2: { "icon/href": threatHumanDeliberateSymbolShaded, "icon/height": deliberateHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -322,6 +341,9 @@ export default [
                     0: { "icon/href": threatNonHumanSymbol, "icon/height": nonHumanHeight },
                     1: { "icon/href": threatNonHumanSymbolOutlined, "icon/height": nonHumanHeight },
                     2: { "icon/href": threatNonHumanSymbolShaded, "icon/height": nonHumanHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -336,6 +358,9 @@ export default [
                     0: { "icon/href": treatmentSymbol, "body/strokeDasharray": "", "icon/height": treatmentHeight },
                     1: { "icon/href": treatmentSymbolOutlined, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight },
                     2: { "icon/href": treatmentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -350,6 +375,9 @@ export default [
                     0: { "icon/href": unwantedIncidentSymbol, "body/strokeDasharray": "", "icon/height": incidentHeight },
                     1: { "icon/href": unwantedIncidentSymbolOutlined, "body/strokeDasharray": "8, 4", "icon/height": incidentHeight },
                     2: { "icon/href": unwantedIncidentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": incidentHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -364,6 +392,9 @@ export default [
                     0: { "icon/href": vulnerabilitySymbol, "icon/height": vulnerabilityHeight },
                     1: { "icon/href": vulnerabilitySymbolOutlined, "icon/height": vulnerabilityHeight },
                     2: { "icon/href": vulnerabilitySymbolShaded, "icon/height": vulnerabilityHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             }
         ]
@@ -383,6 +414,10 @@ export default [
                     0: { "icon/href": assetSymbol, "icon/height": assetHeight },
                     1: { "icon/href": assetSymbolOutlined, "icon/height": assetHeight },
                     2: { "icon/href": assetSymbolShaded, "icon/height": assetHeight }
+                },
+                existsIn: {
+                    general: true,
+                    asset: true
                 }
             },
             {
@@ -397,6 +432,9 @@ export default [
                     0: { "icon/href": indirectAssetSymbol, "icon/height": indirectHeight },
                     1: { "icon/href": indirectAssetSymbolOutlined, "icon/height": indirectHeight },
                     2: { "icon/href": indirectAssetSymbolShaded, "icon/height": indirectHeight }
+                },
+                existsIn: {
+                    asset: true
                 }
             },
             {
@@ -411,6 +449,9 @@ export default [
                     0: { "icon/href": riskSymbol, "icon/height": riskHeight },
                     1: { "icon/href": riskSymbolOutlined, "icon/height": riskHeight },
                     2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -425,6 +466,9 @@ export default [
                     0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight},
                     1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight},
                     2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
+                },
+                existsIn: {
+                    asset: true
                 }
             },
             {
@@ -439,6 +483,9 @@ export default [
                     0: { "icon/href": threatHumanAccidentalSymbol, "icon/height": accidentalHeight },
                     1: { "icon/href":threatHumanAccidentalSymbolOutline, "icon/height": accidentalHeight },
                     2: { "icon/href": threatHumanAccidentalSymbolShadow, "icon/height": accidentalHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -453,6 +500,9 @@ export default [
                     0: { "icon/href": threatHumanDeliberateSymbol, "icon/height": deliberateHeight },
                     1: { "icon/href": threatHumanDeliberateSymbolOutlined, "icon/height": deliberateHeight },
                     2: { "icon/href": threatHumanDeliberateSymbolShaded, "icon/height": deliberateHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -467,6 +517,9 @@ export default [
                     0: { "icon/href": threatNonHumanSymbol, "icon/height": nonHumanHeight },
                     1: { "icon/href": threatNonHumanSymbolOutlined, "icon/height": nonHumanHeight },
                     2: { "icon/href": threatNonHumanSymbolShaded, "icon/height": nonHumanHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -481,6 +534,9 @@ export default [
                     0: { "icon/href": treatmentSymbol, "body/strokeDasharray": "", "icon/height": treatmentHeight },
                     1: { "icon/href": treatmentSymbolOutlined, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight },
                     2: { "icon/href": treatmentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -495,6 +551,9 @@ export default [
                     0: { "icon/href": unwantedIncidentSymbol, "body/strokeDasharray": "", "icon/height": incidentHeight },
                     1: { "icon/href": unwantedIncidentSymbolOutlined, "body/strokeDasharray": "8, 4", "icon/height": incidentHeight },
                     2: { "icon/href": unwantedIncidentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": incidentHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             },
             {
@@ -509,53 +568,9 @@ export default [
                     0: { "icon/href": vulnerabilitySymbol, "icon/height": vulnerabilityHeight },
                     1: { "icon/href": vulnerabilitySymbolOutlined, "icon/height": vulnerabilityHeight },
                     2: { "icon/href": vulnerabilitySymbolShaded, "icon/height": vulnerabilityHeight }
-                }
-            }
-        ]
-    },
-    {
-        name: "Test of Asset diagram",
-        shapes: [
-            {
-                shapeFn: () => new joint.shapes.coras.unboxedElement(),
-                width: 40,
-                height: 80,
-                iconHeight: assetHeight,
-                icon: assetSymbol,
-                text: "Asset",
-                corasType: 0,
-                typeStyles: {
-                    0: { "icon/href": assetSymbol, "icon/height": assetHeight },
-                    1: { "icon/href": assetSymbolOutlined, "icon/height": assetHeight },
-                    2: { "icon/href": assetSymbolShaded, "icon/height": assetHeight }
-                }
-            },
-            {
-                shapeFn: () => new joint.shapes.coras.unboxedElement(),
-                width: 40,
-                height: 80,
-                iconHeight: indirectHeight,
-                icon: indirectAssetSymbol,
-                text: "Indirect\nAsset",
-                corasType: 0,
-                typeStyles: {
-                    0: { "icon/href": indirectAssetSymbol, "icon/height": indirectHeight },
-                    1: { "icon/href": indirectAssetSymbolOutlined, "icon/height": indirectHeight },
-                    2: { "icon/href": indirectAssetSymbolShaded, "icon/height": indirectHeight }
-                }
-            },
-            {
-                shapeFn: () => new joint.shapes.coras.unboxedElement(),
-                width: 40,
-                height: 80,
-                iconHeight: stakeholderHeight,
-                icon: stakeholderSymbol,
-                text: "Stakeholder",
-                corasType: 0,
-                typeStyles: {
-                    0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
-                    1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
-                    2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
+                },
+                existsIn: {
+                    general: true
                 }
             }
         ]
