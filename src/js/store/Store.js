@@ -70,7 +70,13 @@ function Editor(state, action) {
         diagramTypes: [
             "general",
             "asset"
-        ]
+        ],
+        cellResizing: false,
+        elementPosition: {
+            x: 0,
+            y: 0
+        },
+        movingLinks: []
     };
 
     const newState = Object.assign({}, state);
@@ -248,6 +254,18 @@ function Editor(state, action) {
 
         case ActionTypes.EDITOR.SET_CURR_SHAPES:
             newState.currentShapes = action.payload;
+            return newState;
+
+        case ActionTypes.EDITOR.SET_CELL_RESIZING:
+            newState.cellResizing = action.payload.boolean;
+            return newState;
+
+        case ActionTypes.EDITOR.SET_ELEMENT_POSITION:
+            newState.elementPosition = action.payload.pos;
+            return newState;
+
+        case ActionTypes.EDITOR.SET_MOVING_LINKS:
+            newState.movingLinks = action.payload.arr;
             return newState;
 
     }

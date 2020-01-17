@@ -112,3 +112,18 @@ export const SetCurrShapes = (shapes) => ({
     type: ActionTypes.EDITOR.SET_CURR_SHAPES,
     payload: { shapes }
 });
+
+export const SetCellResizing = (boolean) => ({
+    type: ActionTypes.EDITOR.SET_CELL_RESIZING,
+    payload: { boolean }
+});
+
+export const SetElementPosition = (pos) => ({
+    type: ActionTypes.EDITOR.SET_ELEMENT_POSITION,
+    payload: { pos }
+});
+
+export const SetMovingLinks = (arr) => ({
+    type: ActionTypes.EDITOR.SET_MOVING_LINKS,
+    payload: { arr }
+});

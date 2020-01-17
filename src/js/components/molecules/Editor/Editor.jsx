@@ -1,6 +1,7 @@
 import React from 'react';
 import joint from 'jointjs';
 import { connect } from 'react-redux';
+import _ from 'lodash';
 import {
     ElementRightClicked,
     ElementDoubleClicked,
@@ -20,7 +21,10 @@ import {
     CellHandleMoved,
     SetGraph,
     SetCurrGraph,
-    SetPaper
+    SetPaper,
+    SetCellResizing,
+    SetElementPosition,
+    SetMovingLinks
 } from '../../../store/Actions';
 
 import Modal from '../../atoms/Modal/Modal';
@@ -65,6 +69,9 @@ class Editor extends React.Component {
         this.updatePaperSize = this.updatePaperSize.bind(this);
         this.removeLink = this.removeLink.bind(this);
         this.cellToolHandleMoved = this.cellToolHandleMoved.bind(this);
+        this.unembedElement = this.unembedElement.bind(this);
+        this.embedElement = this.embedElement.bind(this);
+        this.resizeElement = this.resizeElement.bind(this);
 
         this.paperOnMouseUp = this.paperOnMouseUp.bind(this);
 
@@ -79,6 +86,9 @@ class Editor extends React.Component {
 
         this.loadRef = React.createRef();
         this.paperRef = React.createRef();
+
+        this.testEvent = this.testEvent.bind(this);
+        this.beginElementResize = this.beginElementResize.bind(this);
     }
 
     saveToLocalStorage() {
@@ -142,6 +152,9 @@ class Editor extends React.Component {
         if (this.props.interactive === undefined ? true : this.props.interactive) {
             this.paper.on('cell:contextmenu', (elementView, e, x, y) => this.props.elementDoubleClicked(elementView.model, e));
             this.paper.on('cell:pointerdblclick', (elementView, e, x, y) => this.props.elementDoubleClicked(elementView.model, e));
+            this.paper.on('cell:pointerup', this.embedElement);
+            this.paper.on('cell:pointerdown', this.unembedElement);
+            this.paper.on('cell:pointermove', this.resizeElement);
 
             this.paper.on('cell:mousewheel', this.handleScroll);
             this.paper.on('blank:mousewheel', this.handleScrollBlank);
@@ -149,12 +162,19 @@ class Editor extends React.Component {
             this.paper.on('blank:pointerdown', this.beginMovePaper);
             this.paper.on('blank:pointermove', this.movePaper);
             this.paper.on('blank:pointerup', this.endMovePaper);
+            this.paper.on('element:sizeSelector:pointerdown', this.beginElementResize);
         }
         //this.props.setPaper(paper);
         //.props.setGraph('general', this.graph);
         //this.props.setCurrGraph('general', this.graph);
         //this.props.setGraph('general', this.graph.toJSON());
         this.props.setCurrGraph('general', this.graph.toJSON());
+    }
+
+    testEvent(cellView, e, x, y) {
+        console.log("Event triggered");
+        console.log(cellView);
+        console.log(e);
     }
 
     componentWillUnmount() {
@@ -183,6 +203,155 @@ class Editor extends React.Component {
         this.handleScroll(null, e, x, y, delta);
     }
 
+    unembedElement(cellView, evt, x, y) {
+        var cell = cellView.model;
+
+        //console.log(cellView);
+        //console.log(cell);
+
+        //this.props.setElementPosition(cell.attributes.position);
+        this.setState({ elementPosition: cell.attributes.position });
+        //console.log(cell.attributes.position);
+
+
+        if (!cell.get('embeds') || cell.get('embeds').length === 0) {
+            cell.toFront();
+        } else {
+            // is a parent cell,  store related links
+            if (!this.state.movingLinks) {
+                var arr = [];
+                console.log("CALCULATION");
+                _.each(cellView.model.getEmbeddedCells(), child => {
+                    // find connected links and add them to array
+                    var temp = this.graph.getConnectedLinks(child);
+
+                    for (let i = 0; i < temp.length; i++) {
+                        if (arr.findIndex(element => element.cid === temp[i].cid) === -1) {
+                            arr.push(temp[i]);
+                        }
+                    }
+                    //console.log(temp);
+                });
+
+                this.setState({ movingLinks: arr });
+                //this.props.setMovingLinks(arr);
+            }
+        }
+
+        if (cell.get('parent')) {
+            this.graph.getCell(cell.get('parent')).unembed(cell);
+        }
+    }
+
+    embedElement(cellView, evt, x, y) {
+        var cell = cellView.model;
+        //console.log(cellView);
+
+        if (cell.attributes.type === 'devs.Link') {
+            console.log(cell);
+            return;
+        }
+
+        //this.props.setMovingLinks(null); // unchecked for now
+        this.setState({ movingLinks: null });
+
+        // May need more guards, but for now just check for non falsy selectedCellView
+        if (this.props.cellResizing) {
+            // Resize
+           // console.log(x + " " + y);
+            //console.log(cellView);
+            //var posX = cellView.model.attributes.position.x;
+            //var posY = cellView.model.attributes.position.y;
+            //cellView.model.resize(x - posX, y-posY);
+
+
+
+
+            cellView.options.interactive = true;
+            this.props.setCellResizing(false);
+            return;
+        }
+
+        var cellViewsBelow = this.paper.findViewsFromPoint(cell.getBBox().center());
+        //console.log(cellViewsBelow);
+
+        if (cellViewsBelow.length) {
+            var cellViewBelow = _.find(cellViewsBelow, function (c) { return c.model.id !== cell.id });
+            //console.log(cellViewBelow);
+            if (cellViewBelow && cellViewBelow.model.get('parent') !== cell.id) {
+                cellViewBelow.model.embed(cell);
+            }
+        } 
+    }
+
+    beginElementResize(cellView, e, x, y) {
+        cellView.options.interactive = false;
+        this.props.setCellResizing(true);
+        console.log("BEGUN");
+        //e.stopPropagation();
+    }
+
+    resizeElement(cellView, e, x, y) {
+        if (!this.props.cellResizing) {
+
+            // if not parent return. 
+            if (!cellView.model.get('embeds') || !cellView.model.get('embeds').length) {
+                return;
+            }
+
+            // If no links or vertices return
+            if (!this.state.movingLinks) {
+                return;
+            }
+
+            //console.log(cellView.model.getEmbeddedCells());
+            // dragging element
+
+            // find delta
+
+            var currPos = cellView.model.attributes.position;
+
+            var prevPos = this.state.elementPosition;
+
+            //update position
+
+            //this.props.setElementPosition(currPos);
+            this.setState({ elementPosition: currPos });
+            var dx = currPos.x - prevPos.x;
+            var dy = currPos.y - prevPos.y;
+
+            var arr = this.state.movingLinks;
+
+            for (let i = 0; i < arr.length; i++) {
+                var vertices = arr[i].get('vertices');
+                if (vertices && vertices.length) {
+                    var newVertices = [];
+
+                    for (let j = 0; j < vertices.length; j++) {
+                        newVertices.push({ x: vertices[j].x + dx, y: vertices[j].y + dy });
+                    }
+                    arr[i].set('vertices', newVertices);
+                }
+            }
+            return;
+        }
+        var posX = cellView.model.attributes.position.x;
+        var posY = cellView.model.attributes.position.y;
+
+        let newX = x - posX;
+        let newY = y - posY;
+
+        if (newX < 100) {
+            //minimum size can be changed later
+            newX = 100;
+        }
+
+        if (newY < 100) {
+            newY = 100;
+        }
+        cellView.model.resize(newX, newY);
+    }
+
     beginMovePaper(e, x, y) {
         this.setState({ paperMove: { moving: true, x, y } });
     }
@@ -195,7 +364,17 @@ class Editor extends React.Component {
     }
 
     endMovePaper(e, x, y) {
-        this.setState({ paperMove: { moving: false } })
+        console.log("REEEE");
+        if (this.state.paperMove.moving) {
+            this.setState({ paperMove: { moving: false } })
+        } else if (this.state.cellResizing !== false) {
+            // resize element
+            console.log("RESIZE");
+
+            // remove cellview
+            this.props.setCellView(null);
+        }
+
     }
 
     updatePaperSize() {
@@ -226,6 +405,9 @@ class Editor extends React.Component {
         //this.props.elementDropped(this.props.paper.paper.model, localPoint.x, localPoint.y);
         const localPoint = this.paper.pageToLocalPoint(e.pageX, e.pageY);
         this.props.elementDropped(this.paper.model, localPoint.x, localPoint.y);
+        var cellView = this.paper.findViewByModel(this.props.newElement);
+        //console.log(cellView);
+        this.embedElement(cellView);
     }
 
 
@@ -339,7 +521,8 @@ class Editor extends React.Component {
                     showClearModal={this.props.showClearModal}
                     clearPosition={this.props.clearPosition}
                     clearClicked={this.props.clearClicked}
-                    downloadFn={this.downloadSvg} />
+                    downloadFn={this.downloadSvg}
+                    currDiagram={this.props.currGraph.label} />
                 <DiagramSelector
                     paperId={this.paperId}
                     paperWrapperId={this.paperWrapperId}
@@ -379,7 +562,7 @@ class Editor extends React.Component {
 
 
 
-const EditorMenu = ({ loadStartFn, loadRef, loadFn, saveFn, clearFn, showClearModal, clearClicked, clearPosition, downloadFn }) =>
+const EditorMenu = ({ loadStartFn, loadRef, loadFn, saveFn, clearFn, showClearModal, clearClicked, clearPosition, downloadFn, currDiagram }) =>
     <div className="editor-menu">
         <button className="editor-menu__button" onClick={loadStartFn}>Load</button>
         <input type="file" name="loadFile" label="Load" className="editor-menu__hidden" onChange={loadFn} ref={loadRef} />
@@ -387,7 +570,7 @@ const EditorMenu = ({ loadStartFn, loadRef, loadFn, saveFn, clearFn, showClearMo
         <button className="editor-menu__button" onClick={clearClicked}>Clear</button>
         <Modal isOpen={showClearModal} noBackground={true} position={clearPosition}>
             <div className="editor-clear-modal">
-                <div className="editor-clear-modal__description">Are you sure you want to clear the diagram?</div>
+                <div className="editor-clear-modal__description">Are you sure you want to clear the {currDiagram} diagram?</div>
                 <button className="editor-clear-modal__button editor-clear-modal__button--danger" onClick={clearFn}>Yes, clear</button>
                 <button className="editor-clear-modal__button editor-clear-modal__button" onClick={clearClicked}>No, cancel</button>
             </div>
@@ -403,7 +586,11 @@ export default connect((state) => ({
     cellToolWidth: state.editor.cellTool.size.width,
     cellToolHeight: state.editor.cellTool.size.height,
     currGraph: state.editor.currGraph,
-    diagramTypes: state.editor.diagramTypes
+    diagramTypes: state.editor.diagramTypes,
+    cellResizing: state.editor.cellResizing,
+    elementPosition: state.editor.elementPosition,
+    movingLinks: state.editor.movingLinks,
+    newElement: state.editor.movement.element
 
 }), (dispatch) => ({
     elementRightClicked: (element, graph) => dispatch(ElementRightClicked(element, graph)),
@@ -425,5 +612,8 @@ export default connect((state) => ({
     clearGraph: (label) => dispatch(ClearGraph(label)),
     setGraph: (label, graph) => dispatch(SetGraph(label, graph)),
     setCurrGraph: (label, graph) => dispatch(SetCurrGraph(label, graph)),
-    setPaper: (paper) => dispatch(SetPaper(paper))
+    setPaper: (paper) => dispatch(SetPaper(paper)),
+    setCellResizing: (boolean) => dispatch(SetCellResizing(boolean)),
+    setElementPosition: (pos) => dispatch(SetElementPosition(pos)),
+    setMovingLinks: (arr) => dispatch(SetMovingLinks(arr))
 }))(Editor);

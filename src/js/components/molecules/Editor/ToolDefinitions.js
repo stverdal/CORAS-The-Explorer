@@ -46,7 +46,7 @@ const treatmentHeight = 40;
 
 export default [
     {
-        name: "Basic CORAS",
+        name: "Before",
         shapes: [
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -219,12 +219,29 @@ export default [
                 },
                 existsIn: {
                     general: true
+                },
+            },
+            {
+                shapeFn: () => new joint.shapes.coras.roundRectElement(),
+                width: 300,
+                height: 300,
+                corasType: 0,
+                //sizeSelector: unwantedIncidentSymbol,
+                text: "Border",
+                typeStyles: {
+                    0: { "icon/href": null, "icon/height": 0 },
+                    1: { "icon/href": null, "icon/height": 0 },
+                    2: { "icon/href": null, "icon/height": 0 }
+                },
+                existsIn: {
+                    general: true,
+                    asset: true
                 }
-            }
+            },
         ]
     },
     {
-        name: "Before",
+        name: "Before-after",
         shapes: [
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),

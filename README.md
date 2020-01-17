@@ -30,6 +30,7 @@ List of actions circumventing redux
 
     Rely less on local component state. More specifically refer to the seperate papers directly through redux.
     Create a new menu at the side, with tabs connected to seperate papers. Will only display relevant icons per diagram type and switch upon tab selection.
+    Might bind additional state values to the graph, i.e tabNo
 
 ## TODO
     Add all relevant diagrams as options.

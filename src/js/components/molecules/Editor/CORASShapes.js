@@ -5,6 +5,7 @@ function AddCorasShapes(joint) {
                 refWidth: "225%",
                 refHeight: "100%",
                 fill: "#FFF",
+                fillOpacity: 0,
                 refX: "-75%",
                 refY: "0",
                 magnet: true
@@ -132,6 +133,50 @@ function AddCorasShapes(joint) {
             {
                 tagName: "text",
                 selector: "text"
+            }
+        ]
+    });
+    joint.dia.Element.define("coras.roundRectElement", {
+        attrs: {
+            body: {
+                rx: 15,
+                ry: 15,
+                refX: "0",
+                refY: "0",
+                refWidth: "100%",
+                refHeight: "100%",
+                fill: "#FFF",
+                stroke: "#000",
+            },
+            cornerBox: {
+                refX: "0%",
+                refY: "0%",
+                refWidth: "20%",
+                refHeight: "20%",
+                fill: "#FFF",
+                stroke: "#000000"
+            },
+            sizeSelector: {
+                event: 'element:sizeSelector:pointerdown',
+                refWidth: "5%",
+                refHeight: "5%",
+                refX: "100%",
+                refY: "100%"
+            }
+        }
+    }, {
+        markup: [
+            {
+                tagName: "rect",
+                selector: "body"
+            },
+            {
+                tagName: "rect",
+                selector: "cornerBox"
+            },
+            {
+                tagName: "rect",
+                selector: "sizeSelector"
             }
         ]
     });
