@@ -31,6 +31,7 @@ import {
     vulnerabilitySymbol,
     vulnerabilitySymbolOutlined,
     vulnerabilitySymbolShaded,
+    expand,
 } from "./svg//CorasSymbolsBase64.js"
 
 const assetHeight = 60;
@@ -43,6 +44,7 @@ const nonHumanHeight = 40;
 const incidentHeight = 40;
 const vulnerabilityHeight = 40;
 const treatmentHeight = 40;
+const expandHeight = 15;
 
 export default [
     {
@@ -227,11 +229,13 @@ export default [
                 height: 300,
                 corasType: 0,
                 //sizeSelector: unwantedIncidentSymbol,
+                iconHeight: expandHeight,
+                icon: expand,
                 text: "Border",
                 typeStyles: {
-                    0: { "icon/href": null, "icon/height": 0 },
-                    1: { "icon/href": null, "icon/height": 0 },
-                    2: { "icon/href": null, "icon/height": 0 }
+                    0: { "icon/href": expand, "icon/height": expandHeight },
+                    1: { "icon/href": expand, "icon/height": expandHeight },
+                    2: { "icon/href": expand, "icon/height": expandHeight }
                 },
                 existsIn: {
                     general: true,

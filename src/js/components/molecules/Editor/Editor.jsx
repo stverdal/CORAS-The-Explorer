@@ -288,6 +288,31 @@ class Editor extends React.Component {
         cellView.options.interactive = false;
         this.props.setCellResizing(true);
         console.log("BEGUN");
+
+        // store minimum values of X and Y in state
+        // to avoid parent visually excluding child.
+        // get pos and size of all children
+        var currPos = cellView.model.attributes.position;
+
+        var minX = 100 + currPos.x;
+        var minY = 100 + currPos.y;
+
+        _.each(cellView.model.getEmbeddedCells(), child => {
+            //console.log(child);
+            let cX = child.attributes.position.x + child.attributes.size.width;
+            let cY = child.attributes.position.y + child.attributes.size.height;
+
+            if (cX > minX) {
+                minX = cX;
+            }
+            if (cY > minY) {
+                minY = cY;
+            } 
+        });
+
+        console.log(minX + " " + minY);
+        this.setState({ minX: minX - currPos.x });
+        this.setState({ minY: minY - currPos.y });
         //e.stopPropagation();
     }
 
@@ -341,13 +366,13 @@ class Editor extends React.Component {
         let newX = x - posX;
         let newY = y - posY;
 
-        if (newX < 100) {
+        if (newX < this.state.minX) {
             //minimum size can be changed later
-            newX = 100;
+            newX = this.state.minX;
         }
 
-        if (newY < 100) {
-            newY = 100;
+        if (newY < this.state.minY) {
+            newY = this.state.minY;
         }
         cellView.model.resize(newX, newY);
     }

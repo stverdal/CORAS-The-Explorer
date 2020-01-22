@@ -1,3 +1,5 @@
+import { riskSymbol } from "./svg//CorasSymbolsBase64.js";
+
 function AddCorasShapes(joint) {
     joint.dia.Element.define("coras.unboxedElement", {
         attrs: {
@@ -13,9 +15,9 @@ function AddCorasShapes(joint) {
             text: {
                 text: "Asset",
                 refX: "50%",
-                refY: "100%",
+                refY: "55%",
                 textAnchor: "middle",
-                textVerticalAnchor: "bottom"
+                textVerticalAnchor: "top"
             },
         }
     }, {
@@ -151,17 +153,28 @@ function AddCorasShapes(joint) {
             cornerBox: {
                 refX: "0%",
                 refY: "0%",
-                refWidth: "20%",
-                refHeight: "20%",
+                //refWidth: "20%",
+                ///refHeight: "20%",
+                width: 90,
+                height: 90,
                 fill: "#FFF",
                 stroke: "#000000"
             },
+            icon: {
+                width: 15,
+                height: 15,
+                refX: "99%",
+                refY: "99%"
+            },
             sizeSelector: {
                 event: 'element:sizeSelector:pointerdown',
-                refWidth: "5%",
-                refHeight: "5%",
-                refX: "100%",
-                refY: "100%"
+                //refWidth: "5%",
+                //refHeight: "5%",
+                width: 15,
+                height: 15,
+                opacity: 0,
+                refX: "99%",
+                refY: "99%"
             }
         }
     }, {
@@ -173,6 +186,10 @@ function AddCorasShapes(joint) {
             {
                 tagName: "rect",
                 selector: "cornerBox"
+            },
+            {
+                tagName: "image",
+                selector: "icon"
             },
             {
                 tagName: "rect",
