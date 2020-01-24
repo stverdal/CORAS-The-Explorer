@@ -89,6 +89,8 @@ class Editor extends React.Component {
 
         this.testEvent = this.testEvent.bind(this);
         this.beginElementResize = this.beginElementResize.bind(this);
+        this.onHover = this.onHover.bind(this);
+        this.exitHover = this.exitHover.bind(this);
     }
 
     saveToLocalStorage() {
@@ -155,6 +157,8 @@ class Editor extends React.Component {
             this.paper.on('cell:pointerup', this.embedElement);
             this.paper.on('cell:pointerdown', this.unembedElement);
             this.paper.on('cell:pointermove', this.resizeElement);
+            this.paper.on('cell:mouseenter', this.onHover);
+            this.paper.on('cell:mouseleave', this.exitHover);
 
             this.paper.on('cell:mousewheel', this.handleScroll);
             this.paper.on('blank:mousewheel', this.handleScrollBlank);
@@ -269,6 +273,7 @@ class Editor extends React.Component {
 
             cellView.options.interactive = true;
             this.props.setCellResizing(false);
+            cellView.unhighlight();
             return;
         }
 
@@ -287,7 +292,6 @@ class Editor extends React.Component {
     beginElementResize(cellView, e, x, y) {
         cellView.options.interactive = false;
         this.props.setCellResizing(true);
-        console.log("BEGUN");
 
         // store minimum values of X and Y in state
         // to avoid parent visually excluding child.
@@ -360,11 +364,27 @@ class Editor extends React.Component {
             }
             return;
         }
+
         var posX = cellView.model.attributes.position.x;
         var posY = cellView.model.attributes.position.y;
 
+        let newPosX = posX;
+        let newPosY = posY;
+
+        let marginOfError = 50; // min width/ height is 100
+
         let newX = x - posX;
         let newY = y - posY;
+
+        if (x < newPosX + marginOfError) {
+            newPosX = x;
+            newX = cellView.model.attributes.size.width - (x - posX);
+        }
+        if (y < newPosY + marginOfError) {
+            newPosY = y;
+            newY = cellView.model.attributes.size.height - (y - posY);
+        }
+
 
         if (newX < this.state.minX) {
             //minimum size can be changed later
@@ -374,7 +394,17 @@ class Editor extends React.Component {
         if (newY < this.state.minY) {
             newY = this.state.minY;
         }
-        cellView.model.resize(newX, newY);
+        //cellView.model.resize(newX, newY);
+        console.log(newPosX + " " + newPosY);
+
+        cellView.model.set({
+            position: {x: newPosX, y: newPosY},
+            size: {width: newX, height: newY}
+        });
+
+        // To make the highlight follow the actual border
+        cellView.unhighlight();
+        cellView.highlight();
     }
 
     beginMovePaper(e, x, y) {
@@ -389,17 +419,49 @@ class Editor extends React.Component {
     }
 
     endMovePaper(e, x, y) {
-        console.log("REEEE");
         if (this.state.paperMove.moving) {
             this.setState({ paperMove: { moving: false } })
-        } else if (this.state.cellResizing !== false) {
-            // resize element
-            console.log("RESIZE");
+        }
+    }
 
-            // remove cellview
-            this.props.setCellView(null);
+    onHover(cellView, evt) {
+        console.log(cellView);
+        if (cellView.model.attributes.type !== 'coras.roundRectElement') {
+            return;
         }
 
+        var cell = cellView.model;
+
+        cellView.highlight();
+        // show subelement of rect
+        //cell.attr('corners/visibility', 'visible');
+        //groupselector not working for some reason
+        cell.attr({
+            sizeSelectorUL: { visibility: 'visible' },
+            sizeSelectorUR: { visibility: 'visible' },
+            sizeSelectorLL: { visibility: 'visible' },
+            sizeSelectorLR: { visibility: 'visible' }
+        });
+        //cell.attr('sizeSelector/visibility', 'visible');
+    }
+
+    exitHover(cellView, evt) {
+        var cell = cellView.model;
+        if (cellView.model.attributes.type !== 'coras.roundRectElement') {
+            return;
+        }
+
+        var cell = cellView.model;
+
+        cellView.unhighlight();
+        //cell.attr('corners/visibility', 'hidden');
+        cell.attr({
+            sizeSelectorUL: { visibility: 'hidden' },
+            sizeSelectorUR: { visibility: 'hidden' },
+            sizeSelectorLL: { visibility: 'hidden' },
+            sizeSelectorLR: { visibility: 'hidden' }
+        });
+        //cell.attr('sizeSelector/visibility', 'hidden');
     }
 
     updatePaperSize() {
@@ -516,6 +578,7 @@ class Editor extends React.Component {
     }
 
     cellToolHandleMoved(e) {
+        console.log('Celltoolhandlemoved');
         const { pageX, pageY } = e;
 
         const newHeight = pageY - (this.props.cellTool.position.y + this.props.cellToolHeight) + this.props.cellToolHeight;

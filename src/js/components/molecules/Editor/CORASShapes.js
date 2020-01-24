@@ -159,20 +159,43 @@ function AddCorasShapes(joint) {
                 height: 90,
                 fill: "#FFF",
                 stroke: "#000000"
-            },
+            },/*
             icon: {
+                visibility: 'hidden',
                 width: 15,
                 height: 15,
                 refX: "99%",
                 refY: "99%"
-            },
-            sizeSelector: {
+            }, */
+            sizeSelectorUL: {
                 event: 'element:sizeSelector:pointerdown',
-                //refWidth: "5%",
-                //refHeight: "5%",
-                width: 15,
-                height: 15,
-                opacity: 0,
+                visibility: 'hidden',
+                r: 7,
+                opacity: 0.5,
+                refX: "1%",
+                refY: "1%"
+            },
+            sizeSelectorUR: {
+                event: 'element:sizeSelector:pointerdown',
+                visibility: 'hidden',
+                r: 7,
+                opacity: 0.5,
+                refX: "99%",
+                refY: "1%"
+            },
+            sizeSelectorLL: {
+                event: 'element:sizeSelector:pointerdown',
+                visibility: 'hidden',
+                r: 7,
+                opacity: 0.5,
+                refX: "1%",
+                refY: "99%"
+            },
+            sizeSelectorLR: {
+                event: 'element:sizeSelector:pointerdown',
+                visibility: 'hidden',
+                r: 7,
+                opacity: 0.5,
                 refX: "99%",
                 refY: "99%"
             }
@@ -186,14 +209,30 @@ function AddCorasShapes(joint) {
             {
                 tagName: "rect",
                 selector: "cornerBox"
-            },
+            },/*
             {
                 tagName: "image",
                 selector: "icon"
+            },*/
+            {
+                tagName: "circle",
+                selector: "sizeSelectorUL",
+                groupSelector: "corners"
             },
             {
-                tagName: "rect",
-                selector: "sizeSelector"
+                tagName: "circle",
+                selector: "sizeSelectorUR",
+                groupSelector: "corners"
+            },
+            {
+                tagName: "circle",
+                selector: "sizeSelectorLL",
+                groupSelector: "corners"
+            },
+            {
+                tagName: "circle",
+                selector: "sizeSelectorLR",
+                groupSelector: "corners"
             }
         ]
     });
