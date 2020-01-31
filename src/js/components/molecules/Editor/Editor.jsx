@@ -111,15 +111,9 @@ class Editor extends React.Component {
         return window.localStorage.getItem(this.paperId + "graph_" + this.props.diagramTypes[0]);
     }
 
-
-    // set this.paper to store.currpaper
-    // create new paper on first opening of new tab?
     componentDidMount() {
         const arrowheadShape = 'M 10 0 L 0 5 L 10 10 z';
 
-        //may need to cause a rerender
-        //this.paper = this.props.currPaper.paper;
-        //console.log(this.paper);
         var graph = new joint.dia.Graph();
         this.paper = new joint.dia.Paper({
             el: document.getElementById(this.paperId),
@@ -168,10 +162,6 @@ class Editor extends React.Component {
             this.paper.on('blank:pointerup', this.endMovePaper);
             this.paper.on('element:sizeSelector:pointerdown', this.beginElementResize);
         }
-        //this.props.setPaper(paper);
-        //.props.setGraph('general', this.graph);
-        //this.props.setCurrGraph('general', this.graph);
-        //this.props.setGraph('general', this.graph.toJSON());
         this.props.setCurrGraph('general', this.graph.toJSON());
     }
 
@@ -194,12 +184,10 @@ class Editor extends React.Component {
             const newX = currentScale.sx * scaleFactor > 5 ? currentScale.sx : currentScale.sx * scaleFactor;
             const newY = currentScale.sy * scaleFactor > 5 ? currentScale.sy : currentScale.sy * scaleFactor;
             this.paper.scale(newX, newY);
-            //this.props.paper.paper.scale(newX, newY);
         } else if (delta < 0) {
             const newX = currentScale.sx / scaleFactor < 0.52 ? currentScale.sx : currentScale.sx / scaleFactor;
             const newY = currentScale.sy / scaleFactor < 0.52 ? currentScale.sy : currentScale.sy / scaleFactor;
             this.paper.scale(newX, newY);
-            //this.props.paper.paper.scale(newX, newY);
         }
     }
 
@@ -210,13 +198,7 @@ class Editor extends React.Component {
     unembedElement(cellView, evt, x, y) {
         var cell = cellView.model;
 
-        //console.log(cellView);
-        //console.log(cell);
-
-        //this.props.setElementPosition(cell.attributes.position);
         this.setState({ elementPosition: cell.attributes.position });
-        //console.log(cell.attributes.position);
-
 
         if (!cell.get('embeds') || cell.get('embeds').length === 0) {
             cell.toFront();
@@ -234,11 +216,9 @@ class Editor extends React.Component {
                             arr.push(temp[i]);
                         }
                     }
-                    //console.log(temp);
                 });
 
                 this.setState({ movingLinks: arr });
-                //this.props.setMovingLinks(arr);
             }
         }
 
@@ -249,28 +229,16 @@ class Editor extends React.Component {
 
     embedElement(cellView, evt, x, y) {
         var cell = cellView.model;
-        //console.log(cellView);
 
         if (cell.attributes.type === 'devs.Link') {
             console.log(cell);
             return;
         }
 
-        //this.props.setMovingLinks(null); // unchecked for now
         this.setState({ movingLinks: null });
 
         // May need more guards, but for now just check for non falsy selectedCellView
         if (this.props.cellResizing) {
-            // Resize
-           // console.log(x + " " + y);
-            //console.log(cellView);
-            //var posX = cellView.model.attributes.position.x;
-            //var posY = cellView.model.attributes.position.y;
-            //cellView.model.resize(x - posX, y-posY);
-
-
-
-
             cellView.options.interactive = true;
             this.props.setCellResizing(false);
             cellView.unhighlight();
@@ -278,15 +246,13 @@ class Editor extends React.Component {
         }
 
         var cellViewsBelow = this.paper.findViewsFromPoint(cell.getBBox().center());
-        //console.log(cellViewsBelow);
 
         if (cellViewsBelow.length) {
             var cellViewBelow = _.find(cellViewsBelow, function (c) { return c.model.id !== cell.id });
-            //console.log(cellViewBelow);
             if (cellViewBelow && cellViewBelow.model.get('parent') !== cell.id) {
                 cellViewBelow.model.embed(cell);
             }
-        } 
+        }
     }
 
     beginElementResize(cellView, e, x, y) {
@@ -297,27 +263,51 @@ class Editor extends React.Component {
         // to avoid parent visually excluding child.
         // get pos and size of all children
         var currPos = cellView.model.attributes.position;
+        var currSize = cellView.model.attributes.size;
 
-        var minX = 100 + currPos.x;
-        var minY = 100 + currPos.y;
+        //var minWidth = 100 + currPos.x;
+        //var minHeight = 100 + currPos.y;
+
+        //maybe init as null or 0 or falsy instead
+        var maxULX = currPos.x + currSize.width; //max Upper Left X
+        var maxULY = currPos.y + currSize.height; //max Upper Left Y
+
+        var minLRX = currPos.x; //min Lower Right X
+        var minLRY = currPos.y; //min Lower Right Y
 
         _.each(cellView.model.getEmbeddedCells(), child => {
             //console.log(child);
+            let childPosX = child.attributes.position.x;
+            let childPosY = child.attributes.position.y;
+
+            if (childPosX < maxULX) {
+                maxULX = childPosX;
+            }
+            if (childPosY < maxULY) {
+                maxULY = childPosY;
+            }
+
             let cX = child.attributes.position.x + child.attributes.size.width;
             let cY = child.attributes.position.y + child.attributes.size.height;
 
-            if (cX > minX) {
-                minX = cX;
+            if (cX > minLRX) {
+                minLRX = cX;
             }
-            if (cY > minY) {
-                minY = cY;
-            } 
+            if (cY > minLRY) {
+                minLRY = cY;
+            }
         });
 
-        console.log(minX + " " + minY);
-        this.setState({ minX: minX - currPos.x });
-        this.setState({ minY: minY - currPos.y });
-        //e.stopPropagation();
+        let marginOfError = 20;
+ 
+        this.setState({
+            maxULX: maxULX,
+            maxULY: maxULY,
+            minLRX: minLRX,
+            minLRY: minLRY,
+            changeXPos: x < cellView.model.attributes.position.x + marginOfError,
+            changeYPos: y < cellView.model.attributes.position.y + marginOfError
+        });
     }
 
     resizeElement(cellView, e, x, y) {
@@ -333,18 +323,10 @@ class Editor extends React.Component {
                 return;
             }
 
-            //console.log(cellView.model.getEmbeddedCells());
-            // dragging element
-
-            // find delta
-
             var currPos = cellView.model.attributes.position;
 
             var prevPos = this.state.elementPosition;
 
-            //update position
-
-            //this.props.setElementPosition(currPos);
             this.setState({ elementPosition: currPos });
             var dx = currPos.x - prevPos.x;
             var dy = currPos.y - prevPos.y;
@@ -365,41 +347,55 @@ class Editor extends React.Component {
             return;
         }
 
-        var posX = cellView.model.attributes.position.x;
-        var posY = cellView.model.attributes.position.y;
+        var pos = cellView.model.attributes.position;
+        var size = cellView.model.attributes.size;
 
-        let newPosX = posX;
-        let newPosY = posY;
+        let newPosX = pos.x;
+        let newPosY = pos.y;
 
-        let marginOfError = 50; // min width/ height is 100
+        let minSize = 100; 
 
-        let newX = x - posX;
-        let newY = y - posY;
+        let newWidth = x - pos.x;
+        let newHeight = y - pos.y;
 
-        if (x < newPosX + marginOfError) {
-            newPosX = x;
-            newX = cellView.model.attributes.size.width - (x - posX);
+        //console.log(this.state.maxULX + "  " + pos.x);
+        
+        if (this.state.changeXPos) {
+            // needs fix
+            if (x > this.state.maxULX) {
+                newPosX = this.state.maxULX;
+                newWidth = size.width - (this.state.maxULX -pos.x);
+            } else {
+                newPosX = x;
+                newWidth = size.width - (x - pos.x);
+            }
+        } else {
+            if (x < this.state.minLRX) {
+                newWidth = this.state.minLRX - pos.x;
+            }   
         }
-        if (y < newPosY + marginOfError) {
-            newPosY = y;
-            newY = cellView.model.attributes.size.height - (y - posY);
+        if (this.state.changeYPos) {
+            if (y > this.state.maxULY) {
+                newPosY = this.state.maxULY
+                newHeight = size.height + (pos.y - this.state.maxULY);
+            } else {
+                newPosY = y;
+                newHeight = size.height + (pos.y - y);
+            }
+        } else {
+            if (y < this.state.minLRY) {
+                newHeight = this.state.minLRY - pos.y;
+
+            } 
         }
 
+        newWidth = (newWidth < minSize) ? minSize : newWidth;
+        newHeight = (newHeight < minSize) ? minSize : newHeight;
 
-        if (newX < this.state.minX) {
-            //minimum size can be changed later
-            newX = this.state.minX;
-        }
-
-        if (newY < this.state.minY) {
-            newY = this.state.minY;
-        }
-        //cellView.model.resize(newX, newY);
-        console.log(newPosX + " " + newPosY);
-
+        console.log(newWidth + "  " + newHeight);
         cellView.model.set({
-            position: {x: newPosX, y: newPosY},
-            size: {width: newX, height: newY}
+            position: { x: newPosX, y: newPosY },
+            size: { width: newWidth, height: newHeight }
         });
 
         // To make the highlight follow the actual border
@@ -442,7 +438,6 @@ class Editor extends React.Component {
             sizeSelectorLL: { visibility: 'visible' },
             sizeSelectorLR: { visibility: 'visible' }
         });
-        //cell.attr('sizeSelector/visibility', 'visible');
     }
 
     exitHover(cellView, evt) {
@@ -461,11 +456,9 @@ class Editor extends React.Component {
             sizeSelectorLL: { visibility: 'hidden' },
             sizeSelectorLR: { visibility: 'hidden' }
         });
-        //cell.attr('sizeSelector/visibility', 'hidden');
     }
 
     updatePaperSize() {
-        //this.props.paper.paper.setDimensions(
         this.paper.setDimensions(
             document.getElementById(this.paperWrapperId).offsetWidth - 10,
             document.getElementById(this.paperWrapperId).offsetHeight - 10);
@@ -479,17 +472,8 @@ class Editor extends React.Component {
         } else this.setState({ linkToRemove: null });
     }
 
-    /*
     paperOnMouseUp(e) {
         e.preventDefault();
-        const localPoint = this.paper.pageToLocalPoint(e.pageX, e.pageY);
-        this.props.elementDropped(this.graph, localPoint.x, localPoint.y);
-    }*/
-
-    paperOnMouseUp(e) {
-        e.preventDefault();
-        //const localPoint = this.props.paper.paper.pageToLocalPoint(e.pageX, e.pageY);
-        //this.props.elementDropped(this.props.paper.paper.model, localPoint.x, localPoint.y);
         const localPoint = this.paper.pageToLocalPoint(e.pageX, e.pageY);
         this.props.elementDropped(this.paper.model, localPoint.x, localPoint.y);
         var cellView = this.paper.findViewByModel(this.props.newElement);
@@ -503,7 +487,6 @@ class Editor extends React.Component {
         e.preventDefault();
         const a = document.createElement('a');
         const graphContent = new Blob([JSON.stringify(this.graph.toJSON(), null, 2)], { type: 'text/plain' });
-        //const graphContent = new Blob([JSON.stringify(this.props.paper.paper.model.toJSON(), null, 2)], { type: 'text/plain' });
         a.href = URL.createObjectURL(graphContent);
         a.download = "CORASDiagram.json";
         a.click();
@@ -515,7 +498,6 @@ class Editor extends React.Component {
         const reader = new FileReader();
         if (filePath.files && filePath.files[0]) {
             reader.addEventListener('load', (e) => this.graph.fromJSON(JSON.parse(e.target.result)), { once: true });
-            //reader.addEventListener('load', (e) => this.props.paper.paper.model.fromJSON(JSON.parse(e.target.result)), { once: true });
             reader.readAsText(filePath.files[0]);
             filePath.value = "";
         }
@@ -523,18 +505,13 @@ class Editor extends React.Component {
 
     clearGraph(e) {
         this.graph.clear();
-        //this.props.paper.paper.model.clear();
         window.localStorage.removeItem(this.paperId + "graph_" + this.props.currGraph.label);
         if (this.props.initialDiagram) this.graph.fromJSON(this.props.initialDiagram);
-        //if (this.props.initialDiagram) this.props.paper.paper.model.fromJSON(this.props.initialDiagram);
         this.props.clearConfirmed();
     }
 
     downloadSvg() {
         let svgElement = this.paper.svg;
-        //let svgElement = this.props.paper.paper.svg;
-
-        // Remove link tools from downloaded SVG
         const toolElems = svgElement.getElementsByClassName("link-tools");
         const arrowElems = svgElement.getElementsByClassName("marker-arrowhead");
 
@@ -597,7 +574,6 @@ class Editor extends React.Component {
     }
 
     render() {
-        // No need to send tooldef as prop as far as i can see
         return (
             <div className="editor-wrapper">
                 <EditorMenu

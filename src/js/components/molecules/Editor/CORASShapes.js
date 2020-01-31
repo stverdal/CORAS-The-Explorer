@@ -151,22 +151,20 @@ function AddCorasShapes(joint) {
                 stroke: "#000",
             },
             cornerBox: {
-                refX: "0%",
-                refY: "0%",
-                //refWidth: "20%",
-                ///refHeight: "20%",
-                width: 90,
-                height: 90,
-                fill: "#FFF",
-                stroke: "#000000"
-            },/*
+                fill: "none",
+                stroke: "#000000",
+                d: 'M 0 90 H 90 90 V 90 0'
+            },
             icon: {
-                visibility: 'hidden',
-                width: 15,
-                height: 15,
-                refX: "99%",
-                refY: "99%"
-            }, */
+                refX: 34,
+                refY: 10
+            },
+            text: {
+                refX: 45,
+                refY: 56,
+                textVerticalAnchor: "top",
+                textAnchor: "middle"
+            },
             sizeSelectorUL: {
                 event: 'element:sizeSelector:pointerdown',
                 visibility: 'hidden',
@@ -207,13 +205,17 @@ function AddCorasShapes(joint) {
                 selector: "body"
             },
             {
-                tagName: "rect",
+                tagName: "path",
                 selector: "cornerBox"
-            },/*
+            },
             {
                 tagName: "image",
                 selector: "icon"
-            },*/
+            },
+            {
+                tagName: "text",
+                selector: "text"
+            },
             {
                 tagName: "circle",
                 selector: "sizeSelectorUL",

@@ -117,7 +117,7 @@ export default [
                     2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
                 },
                 existsIn: {
-                    asset: true
+                    //asset: true
                 }
             },
             {
@@ -229,16 +229,15 @@ export default [
                 height: 300,
                 corasType: 0,
                 //sizeSelector: unwantedIncidentSymbol,
-                iconHeight: expandHeight,
-                icon: expand,
-                text: "Border",
+                iconHeight: stakeholderHeight,
+                icon: stakeholderSymbol,
+                text: "Stakeholder",
                 typeStyles: {
-                    0: { "icon/href": expand, "icon/height": expandHeight },
-                    1: { "icon/href": expand, "icon/height": expandHeight },
-                    2: { "icon/href": expand, "icon/height": expandHeight }
+                    0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
+                    1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
+                    2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
                 },
                 existsIn: {
-                    general: true,
                     asset: true
                 }
             },
@@ -313,7 +312,7 @@ export default [
                     2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
                 },
                 existsIn: {
-                    asset: true
+                    //asset: true
                 }
             },
             {
@@ -417,7 +416,25 @@ export default [
                 existsIn: {
                     general: true
                 }
-            }
+            },
+            {
+                shapeFn: () => new joint.shapes.coras.roundRectElement(),
+                width: 300,
+                height: 300,
+                corasType: 1,
+                //sizeSelector: unwantedIncidentSymbol,
+                iconHeight: stakeholderHeight,
+                icon: stakeholderSymbol,
+                text: "Stakeholder",
+                typeStyles: {
+                    0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
+                    1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
+                    2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
+                },
+                existsIn: {
+                    asset: true
+                }
+            },
         ]
     },
     {
@@ -489,7 +506,7 @@ export default [
                     2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
                 },
                 existsIn: {
-                    asset: true
+                    //asset: true
                 }
             },
             {
@@ -593,7 +610,25 @@ export default [
                 existsIn: {
                     general: true
                 }
-            }
+            },
+            {
+                shapeFn: () => new joint.shapes.coras.roundRectElement(),
+                width: 300,
+                height: 300,
+                corasType: 2,
+                //sizeSelector: unwantedIncidentSymbol,
+                iconHeight: stakeholderHeight,
+                icon: stakeholderSymbol,
+                text: "Stakeholder",
+                typeStyles: {
+                    0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
+                    1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
+                    2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
+                },
+                existsIn: {
+                    asset: true
+                }
+            },
         ]
     }
 ];
