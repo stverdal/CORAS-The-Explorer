@@ -19,6 +19,7 @@ const EditorToolBar = ({ beginMoveElement, svgs }) =>
                     shape.attr("text/text", svg.text);
                     shape.set('corasType', svg.corasType);
                     shape.set('typeStyles', svg.typeStyles);
+                    shape.set('role', svg.role);
                     beginMoveElement(shape, svg.width, svg.height)
                 }}
                 key={i} >

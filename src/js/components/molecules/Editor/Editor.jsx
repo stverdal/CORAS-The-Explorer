@@ -162,7 +162,7 @@ class Editor extends React.Component {
             this.paper.on('blank:pointerup', this.endMovePaper);
             this.paper.on('element:sizeSelector:pointerdown', this.beginElementResize);
         }
-        this.props.setCurrGraph('general', this.graph.toJSON());
+        this.props.setCurrGraph('asset', this.graph.toJSON()); //TODO
     }
 
     testEvent(cellView, e, x, y) {
@@ -231,7 +231,68 @@ class Editor extends React.Component {
         var cell = cellView.model;
 
         if (cell.attributes.type === 'devs.Link') {
+            //link dropped
+            console.log("link");
             console.log(cell);
+            var source = cell.getSourceElement().attributes.role;
+            var target;
+            if (cell.getTargetElement()) {
+                target = cell.getTargetElement().attributes.role;
+            }
+            console.log(source);
+            console.log(target);
+            var result = 'delet';
+
+            switch (source) {
+                case "threat_source":
+                    switch (target) {
+                        case "threat_scenario":
+                        case "unwanted_incident":
+                        case "risk":
+                            result = "inititates";
+                            break;
+                        default:
+                            cell.remove();
+                    }
+                    break;
+                case "threat_scenario":
+                    if (target === "threat_scenario" || target === "unwanted_incident") {
+                        result = "leads_to";
+                    } else { cell.remove() }
+                    break;
+                case "unwanted_incident":
+                    if (target === "threat_scenario" || target === "unwanted_incident") {
+                        result = "leads_to";
+                    } else if (target === "direct_asset") {
+                        result = "impacts";
+                    } else { cell.remove() }
+                    break;
+                case "direct_asset":
+                case "indirect_asset":
+                    if (target === "direct_asset" || target === "indirect_asset") {
+                        result = "affects";
+                    } else { cell.remove() }
+                    break;
+                case "treatment":
+                    switch (target) {
+                        case "vulnerability":
+                        case "threat_source":
+                        case "risk":
+                        case "threat_scenario":
+                            result = "treats";
+                            break;
+                        default:
+                            cell.remove();
+                       
+                    }
+                    break;
+                default:
+                    result = 'delet';
+                    cell.remove();
+            }
+            console.log("The result is: " + result + "!");
+
+
             return;
         }
 

@@ -35,7 +35,6 @@ const DiagramSelector = ({ graphs, currGraph, setGraph, changeGraph, selectedTab
             graph.fromJSON(graphs[diagramLabel]);
         }
 
-        console.log(graph);
         changeGraph(diagramLabel, graph);
     };
 

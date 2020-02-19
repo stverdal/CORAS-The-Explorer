@@ -138,6 +138,57 @@ function AddCorasShapes(joint) {
             }
         ]
     });
+    joint.dia.Element.define("coras.riskElement", {
+        attrs: {
+            body: {
+                refX: "0",
+                refY: "0",
+                refWidth: "100%",
+                refHeight: "100%",
+                fill: "#FFF",
+                stroke: "#000",
+                magnet: true
+            },
+            innerBody: {
+                refX: "5%",
+                refY: "5%",
+                refWidth: "90%",
+                refHeight: "90%",
+                fill: "#FFF"
+            },
+            icon: {
+                refWidth: "50%",
+                refHeight: "50%",
+                refX: "25%",
+                refY: "-52%"
+            },
+            text: {
+                refX: "50%",
+                refY: "50%",
+                textVerticalAnchor: "middle",
+                textAnchor: "middle"
+            }
+        }
+    }, {
+        markup: [
+            {
+                tagName: "rect",
+                selector: "body"
+            },
+            {
+                tagName: "rect",
+                selector: "innerBody"
+            },
+            {
+                tagName: "image",
+                selector: "icon"
+            },
+            {
+                tagName: "text",
+                selector: "text"
+            }
+        ]
+    });
     joint.dia.Element.define("coras.roundRectElement", {
         attrs: {
             body: {

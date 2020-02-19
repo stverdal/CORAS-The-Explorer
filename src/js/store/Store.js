@@ -62,14 +62,16 @@ function Editor(state, action) {
             graph: null
         },
         graphs: {
-            general: null,
-            asset: null
+            asset: null,
+            threat: null,
+            risk: null
         },
         // stores the list of icons to be displayed
         currentShapes: [],
         diagramTypes: [
-            "general",
-            "asset"
+            "asset",
+            "threat",
+            "risk"
         ],
         cellResizing: false,
         elementPosition: {

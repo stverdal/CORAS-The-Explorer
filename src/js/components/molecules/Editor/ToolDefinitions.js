@@ -65,9 +65,11 @@ export default [
                 },
                 //
                 existsIn: {
-                    general: true,
-                    asset: true
-                }
+                    threat: true,
+                    asset: true,
+                    risk: true
+                },
+                role: "direct_asset"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -83,8 +85,10 @@ export default [
                     2: { "icon/href": indirectAssetSymbolShaded, "icon/height": indirectHeight }
                 },
                 existsIn: {
-                    asset: true
-                }
+                    asset: true,
+                    risk: true
+                },
+                role: "indirect_asset"
             },
             {
                 shapeFn: () => new joint.shapes.coras.ellipseElement(),
@@ -100,8 +104,27 @@ export default [
                     2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true
+                },
+                role: "threat_scenario"
+            },
+            {
+                shapeFn: () => new joint.shapes.coras.riskElement(),
+                width: 190,
+                height: 80,
+                iconHeight: riskHeight,
+                icon: riskSymbol,
+                text: "Risk",
+                corasType: 0,
+                typeStyles: {
+                    0: { "icon/href": riskSymbol, "icon/height": riskHeight },
+                    1: { "icon/href": riskSymbolOutlined, "icon/height": riskHeight },
+                    2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
+                },
+                existsIn: {
+                    risk: true
+                },
+                role: "risk"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -118,7 +141,8 @@ export default [
                 },
                 existsIn: {
                     //asset: true
-                }
+                },
+                role: "risk"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -134,8 +158,10 @@ export default [
                     2: { "icon/href": threatHumanAccidentalSymbolShadow, "icon/height": accidentalHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true,
+                    risk: true
+                },
+                role: "threat_source"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -151,9 +177,10 @@ export default [
                     2: { "icon/href": threatHumanDeliberateSymbolShaded, "icon/height": deliberateHeight }
                 },
                 existsIn: {
-                    general: true
-                }
-
+                    threat: true,
+                    risk: true
+                },
+                role: "threat_source"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -169,8 +196,10 @@ export default [
                     2: { "icon/href": threatNonHumanSymbolShaded, "icon/height": nonHumanHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true,
+                    risk: true
+                },
+                role: "threat_source"
             },
             {
                 shapeFn: () => new joint.shapes.coras.ellipseElement(),
@@ -186,8 +215,10 @@ export default [
                     2: { "icon/href": treatmentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true,
+                    risk: true
+                },
+                role: "treatment"
             },
             {
                 shapeFn: () => new joint.shapes.coras.rectElement(),
@@ -203,8 +234,9 @@ export default [
                     2: { "icon/href": unwantedIncidentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": incidentHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true
+                },
+                role: "unwanted_incident"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -220,8 +252,9 @@ export default [
                     2: { "icon/href": vulnerabilitySymbolShaded, "icon/height": vulnerabilityHeight }
                 },
                 existsIn: {
-                    general: true
+                    threat: true
                 },
+                role: "vulnerability"
             },
             {
                 shapeFn: () => new joint.shapes.coras.roundRectElement(),
@@ -231,7 +264,7 @@ export default [
                 //sizeSelector: unwantedIncidentSymbol,
                 iconHeight: stakeholderHeight,
                 icon: stakeholderSymbol,
-                text: "Stakeholder",
+                text: "Frame",
                 typeStyles: {
                     0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
                     1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
@@ -239,7 +272,8 @@ export default [
                 },
                 existsIn: {
                     asset: true
-                }
+                },
+                role: "stakeholder"
             },
         ]
     },
@@ -260,9 +294,11 @@ export default [
                     2: { "icon/href": assetSymbolShaded, "icon/height": assetHeight }
                 },
                 existsIn: {
-                    general: true,
-                    asset: true
-                }
+                    threat: true,
+                    asset: true,
+                    risk: true
+                },
+                role: "direct_asset"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -278,8 +314,10 @@ export default [
                     2: { "icon/href": indirectAssetSymbolShaded, "icon/height": indirectHeight }
                 },
                 existsIn: {
-                    asset: true
-                }
+                    asset: true,
+                    risk: true
+                },
+                role: "indirect_asset"
             },
             {
                 shapeFn: () => new joint.shapes.coras.ellipseElement(),
@@ -295,8 +333,27 @@ export default [
                     2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true
+                },
+                role: "threat_scenario"
+            },
+            {
+                shapeFn: () => new joint.shapes.coras.riskElement(),
+                width: 190,
+                height: 80,
+                iconHeight: riskHeight,
+                icon: riskSymbol,
+                text: "Risk",
+                corasType: 1,
+                typeStyles: {
+                    0: { "icon/href": riskSymbol, "icon/height": riskHeight },
+                    1: { "icon/href": riskSymbolOutlined, "icon/height": riskHeight },
+                    2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
+                },
+                existsIn: {
+                    risk: true
+                },
+                role: "risk"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -313,7 +370,8 @@ export default [
                 },
                 existsIn: {
                     //asset: true
-                }
+                },
+                role: "stakeholder"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -329,8 +387,10 @@ export default [
                     2: { "icon/href": threatHumanAccidentalSymbolShadow, "icon/height": accidentalHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true,
+                    risk: true
+                },
+                role: "threat_source"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -346,8 +406,10 @@ export default [
                     2: { "icon/href": threatHumanDeliberateSymbolShaded, "icon/height": deliberateHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true,
+                    risk: true
+                },
+                role: "threat_source"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -363,8 +425,10 @@ export default [
                     2: { "icon/href": threatNonHumanSymbolShaded, "icon/height": nonHumanHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true,
+                    risk: true
+                },
+                role: "threat_source"
             },
             {
                 shapeFn: () => new joint.shapes.coras.ellipseElement(),
@@ -380,8 +444,10 @@ export default [
                     2: { "icon/href": treatmentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true,
+                    risk: true
+                },
+                role: "treatment"
             },
             {
                 shapeFn: () => new joint.shapes.coras.rectElement(),
@@ -397,8 +463,9 @@ export default [
                     2: { "icon/href": unwantedIncidentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": incidentHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true
+                },
+                role: "unwanted_incident"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -414,8 +481,9 @@ export default [
                     2: { "icon/href": vulnerabilitySymbolShaded, "icon/height": vulnerabilityHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true
+                },
+                role: "vulnerability"
             },
             {
                 shapeFn: () => new joint.shapes.coras.roundRectElement(),
@@ -425,7 +493,7 @@ export default [
                 //sizeSelector: unwantedIncidentSymbol,
                 iconHeight: stakeholderHeight,
                 icon: stakeholderSymbol,
-                text: "Stakeholder",
+                text: "Frame",
                 typeStyles: {
                     0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
                     1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
@@ -433,7 +501,8 @@ export default [
                 },
                 existsIn: {
                     asset: true
-                }
+                },
+                role: "frame"
             },
         ]
     },
@@ -454,9 +523,11 @@ export default [
                     2: { "icon/href": assetSymbolShaded, "icon/height": assetHeight }
                 },
                 existsIn: {
-                    general: true,
-                    asset: true
-                }
+                    threat: true,
+                    asset: true,
+                    risk: true
+                },
+                role: "direct_asset"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -472,8 +543,10 @@ export default [
                     2: { "icon/href": indirectAssetSymbolShaded, "icon/height": indirectHeight }
                 },
                 existsIn: {
-                    asset: true
-                }
+                    asset: true,
+                    risk: true
+                },
+                role: "indirect_asset"
             },
             {
                 shapeFn: () => new joint.shapes.coras.ellipseElement(),
@@ -489,8 +562,27 @@ export default [
                     2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true
+                },
+                role: "threat_scenario"
+            },
+            {
+                shapeFn: () => new joint.shapes.coras.riskElement(),
+                width: 190,
+                height: 80,
+                iconHeight: riskHeight,
+                icon: riskSymbol,
+                text: "Risk",
+                corasType: 2,
+                typeStyles: {
+                    0: { "icon/href": riskSymbol, "icon/height": riskHeight },
+                    1: { "icon/href": riskSymbolOutlined, "icon/height": riskHeight },
+                    2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
+                },
+                existsIn: {
+                    risk: true
+                },
+                role: "risk"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -507,7 +599,8 @@ export default [
                 },
                 existsIn: {
                     //asset: true
-                }
+                },
+                role: "stakeholder"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -523,8 +616,10 @@ export default [
                     2: { "icon/href": threatHumanAccidentalSymbolShadow, "icon/height": accidentalHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true,
+                    risk: true
+                },
+                role: "treat_source"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -540,8 +635,10 @@ export default [
                     2: { "icon/href": threatHumanDeliberateSymbolShaded, "icon/height": deliberateHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true,
+                    risk: true
+                },
+                role: "threat_source"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -557,8 +654,10 @@ export default [
                     2: { "icon/href": threatNonHumanSymbolShaded, "icon/height": nonHumanHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true,
+                    risk: true
+                },
+                role: "threat_source"
             },
             {
                 shapeFn: () => new joint.shapes.coras.ellipseElement(),
@@ -574,8 +673,10 @@ export default [
                     2: { "icon/href": treatmentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true,
+                    risk: true
+                },
+                role: "treatment"
             },
             {
                 shapeFn: () => new joint.shapes.coras.rectElement(),
@@ -591,8 +692,9 @@ export default [
                     2: { "icon/href": unwantedIncidentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": incidentHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true
+                },
+                role: "unwanted_incident"
             },
             {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
@@ -608,8 +710,9 @@ export default [
                     2: { "icon/href": vulnerabilitySymbolShaded, "icon/height": vulnerabilityHeight }
                 },
                 existsIn: {
-                    general: true
-                }
+                    threat: true
+                },
+                role: "vulnerability"
             },
             {
                 shapeFn: () => new joint.shapes.coras.roundRectElement(),
@@ -619,7 +722,7 @@ export default [
                 //sizeSelector: unwantedIncidentSymbol,
                 iconHeight: stakeholderHeight,
                 icon: stakeholderSymbol,
-                text: "Stakeholder",
+                text: "Frame",
                 typeStyles: {
                     0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
                     1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
@@ -627,7 +730,8 @@ export default [
                 },
                 existsIn: {
                     asset: true
-                }
+                },
+                role: "frame"
             },
         ]
     }
