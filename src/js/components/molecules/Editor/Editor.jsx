@@ -96,19 +96,24 @@ class Editor extends React.Component {
     saveToLocalStorage() {
         // might want to update redux state here, or update store more frequently
         window.localStorage.setItem(this.paperId + "graph_" + this.props.currGraph.label, JSON.stringify(this.graph.toJSON()));
+        window.localStorage.setItem('currTab', this.props.currGraph.label);
     }
 
     getFromLocalStorage() {
-        console.log(this.props.currGraph.label);
+        //console.log(this.props.currGraph.label);
         var storedGraph = null;
+        var currTab = 'asset'; //default choice
+        if (window.localStorage.getItem('currTab') != 0) {
+            currTab = window.localStorage.getItem('currTab');
+        }
         this.props.diagramTypes.map((type, i) => {
             storedGraph = window.localStorage.getItem(this.paperId + "graph_" + type);
             if (storedGraph) {
                 this.props.setGraph(type, JSON.parse(storedGraph));
             }
         });
-        // a bit hardcoded, return general graph if it exists
-        return window.localStorage.getItem(this.paperId + "graph_" + this.props.diagramTypes[0]);
+        console.log("Get from localstorage " + currTab);
+        return window.localStorage.getItem(this.paperId + "graph_" + currTab);
     }
 
     componentDidMount() {
@@ -135,8 +140,7 @@ class Editor extends React.Component {
         });
 
         // Load graph from localStorage or props
-        this.getFromLocalStorage();
-        // always present general at reload
+        //this.getFromLocalStorage();
         if (this.getFromLocalStorage()) this.graph.fromJSON(JSON.parse(this.getFromLocalStorage()));
         else if (this.props.initialDiagram) this.graph.fromJSON(this.props.initialDiagram);
 
@@ -162,7 +166,13 @@ class Editor extends React.Component {
             this.paper.on('blank:pointerup', this.endMovePaper);
             this.paper.on('element:sizeSelector:pointerdown', this.beginElementResize);
         }
-        this.props.setCurrGraph('asset', this.graph.toJSON()); //TODO
+        let currGraph = 'asset'; //TODO
+        if (window.localStorage.getItem('currTab') !== 0) {
+            currGraph = window.localStorage.getItem('currTab');
+        }
+        console.log(currGraph);
+        console.log(window.localStorage);
+        this.props.setCurrGraph(currGraph, this.graph.toJSON()); //TODO
     }
 
     testEvent(cellView, e, x, y) {
@@ -206,7 +216,6 @@ class Editor extends React.Component {
             // is a parent cell,  store related links
             if (!this.state.movingLinks) {
                 var arr = [];
-                console.log("CALCULATION");
                 _.each(cellView.model.getEmbeddedCells(), child => {
                     // find connected links and add them to array
                     var temp = this.graph.getConnectedLinks(child);
@@ -241,7 +250,7 @@ class Editor extends React.Component {
             }
             console.log(source);
             console.log(target);
-            var result = 'delet';
+            var result = 'no_relation';
 
             switch (source) {
                 case "threat_source":
@@ -249,7 +258,7 @@ class Editor extends React.Component {
                         case "threat_scenario":
                         case "unwanted_incident":
                         case "risk":
-                            result = "inititates";
+                            result = "initiates";
                             break;
                         default:
                             cell.remove();
@@ -286,12 +295,36 @@ class Editor extends React.Component {
                        
                     }
                     break;
+                case "risk":
+                    if (target === "direct_asset") {
+                        result = "impacts";
+                    } else { cell.remove() }
+                    break;
                 default:
-                    result = 'delet';
                     cell.remove();
             }
-            console.log("The result is: " + result + "!");
 
+            /*
+            if (result !== "no_relation") {
+                cell.label(0, {
+                    attrs: {
+                        text: {
+                            text: result
+                        }
+                    },
+                    position: {
+                        distance: 0.5,
+                        offset: -10,
+                        angle: 0,
+                        args: {
+                            keepGradient: true
+                        }
+                    }
+                })
+                cell.attributes.relation = result;
+            }*/
+            cell.attributes.relation = result;
+            console.log(result);
 
             return;
         }
