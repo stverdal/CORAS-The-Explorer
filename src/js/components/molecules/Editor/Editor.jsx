@@ -130,7 +130,8 @@ class Editor extends React.Component {
                 color: 'rgba(255, 255, 255, 1)',
             },
             interactive: this.props.interactive === undefined ? true : this.props.interactive,
-            defaultLink: new joint.shapes.devs.Link({
+            //defaultLink: new joint.shapes.devs.Link({
+            defaultLink: new joint.shapes.coras.defaultLink({
                 attrs: {
                     '.marker-target': {
                         d: arrowheadShape
@@ -239,7 +240,7 @@ class Editor extends React.Component {
     embedElement(cellView, evt, x, y) {
         var cell = cellView.model;
 
-        if (cell.attributes.type === 'devs.Link') {
+        if (cell.attributes.type === 'coras.defaultLink') {
             //link dropped
             console.log("link");
             console.log(cell);
@@ -267,6 +268,7 @@ class Editor extends React.Component {
                 case "threat_scenario":
                     if (target === "threat_scenario" || target === "unwanted_incident") {
                         result = "leads_to";
+                        cell.attr('line/stroke', 'blue');
                     } else { cell.remove() }
                     break;
                 case "unwanted_incident":
@@ -274,6 +276,7 @@ class Editor extends React.Component {
                         result = "leads_to";
                     } else if (target === "direct_asset") {
                         result = "impacts";
+                        cell.attr('line/stroke', 'red');
                     } else { cell.remove() }
                     break;
                 case "direct_asset":
@@ -289,6 +292,7 @@ class Editor extends React.Component {
                         case "risk":
                         case "threat_scenario":
                             result = "treats";
+                            cell.attr('line/stroke', 'green');
                             break;
                         default:
                             cell.remove();
@@ -304,25 +308,18 @@ class Editor extends React.Component {
                     cell.remove();
             }
 
-            /*
+            
             if (result !== "no_relation") {
                 cell.label(0, {
                     attrs: {
                         text: {
                             text: result
                         }
-                    },
-                    position: {
-                        distance: 0.5,
-                        offset: -10,
-                        angle: 0,
-                        args: {
-                            keepGradient: true
-                        }
                     }
-                })
+                });
                 cell.attributes.relation = result;
-            }*/
+            }
+            //console.log("LABELS " + cell.labels());
             cell.attributes.relation = result;
             console.log(result);
 

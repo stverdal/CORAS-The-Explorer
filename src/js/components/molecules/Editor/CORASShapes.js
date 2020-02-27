@@ -289,6 +289,80 @@ function AddCorasShapes(joint) {
             }
         ]
     });
+    joint.dia.Link.define("coras.defaultLink", {
+        defaultLabel: {
+            markup: [
+                {
+                    tagName: 'rect',
+                    selector: 'rect'
+                }, {
+                    tagName: 'text',
+                    selector: 'text'
+                }
+            ],
+            attrs: {
+                text: {
+                    fill: '#000000',
+                    fontSize: 14,
+                    textAnchor: 'middle',
+                    yAlignment: 'middle',
+                    pointerEvents: 'none'
+                },
+                rect: {
+                    ref: 'text',
+                    fill: '#ffffff',
+                    rx: 3,
+                    ry: 3,
+                    refWidth: 1,
+                    refHeight: 1,
+                    refX: 0,
+                    refY: 0
+                }
+            },
+            position: {
+                distance: 0.5,
+                offset: 0,
+                //angle: 0,
+                args: {
+                    keepGradient: true
+                }
+            }
+        },
+        attrs: {
+            line: {
+                connection: true,
+                stroke: '#333333',
+                strokeWidth: 2,
+                strokeLineJoin: 'round',
+                targetMarker: {
+                    'type': 'path',
+                    'd': 'M 10 -5 0 0 10 5 z'
+                }
+            },
+            wrapper: {
+                connection: true,
+                strokeWidth: 10,
+                strokeLinejoin: 'round'
+            }
+        }
+    }, {
+        markup: [{
+            tagName: 'path',
+            selector: 'wrapper',
+            attributes: {
+                'fill': 'none',
+                'cursor': 'pointer',
+                'stroke': 'transparent'
+            }
+        }, {
+            tagName: 'path',
+            selector: 'line',
+            attributes: {
+                'fill': 'none',
+                'pointer-events': 'none'
+            }
+        }] 
+    });
 }
 
 export default AddCorasShapes;

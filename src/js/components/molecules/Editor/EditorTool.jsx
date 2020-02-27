@@ -29,7 +29,7 @@ const EditorToolBar = ({ beginMoveElement, svgs }) =>
             null}
     </div>;
 
-const EditorTool = ({ beginMoveElement, toolDefinitions, selectedTab, selectTab, paper, currentShapes }) => {
+const EditorTool = ({ beginMoveElement, toolDefinitions, selectedTab, selectTab, currentShapes }) => {
 
 
     return (

@@ -1,5 +1,5 @@
 ﻿.diagram-selector {
-
+    margin: 1rem;
 }
 
 .diagram-tabrow {
@@ -11,7 +11,6 @@
 
 .diagram-tabrow__tab {
     margin-right: .5rem;
-    margin-bottom: 1px;
     background-color: darkblue;
     color: white;
     padding: .5rem;
@@ -21,7 +20,6 @@
 .diagram-tabrow__tab--selected {
     background-color: white;
     color: #000;
-    margin-bottom: 0rem;
     border-top: solid 1px #000;
     border-left: solid 1px #000;
     border-right: solid 1px #000;
