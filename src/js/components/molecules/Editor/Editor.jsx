@@ -260,6 +260,7 @@ class Editor extends React.Component {
                         case "unwanted_incident":
                         case "risk":
                             result = "initiates";
+                            cell.attr('line/strokeDasharray', '3 6');
                             break;
                         default:
                             cell.remove();
@@ -268,7 +269,6 @@ class Editor extends React.Component {
                 case "threat_scenario":
                     if (target === "threat_scenario" || target === "unwanted_incident") {
                         result = "leads_to";
-                        cell.attr('line/stroke', 'blue');
                     } else { cell.remove() }
                     break;
                 case "unwanted_incident":
@@ -276,7 +276,7 @@ class Editor extends React.Component {
                         result = "leads_to";
                     } else if (target === "direct_asset") {
                         result = "impacts";
-                        cell.attr('line/stroke', 'red');
+                        cell.attr('line/strokeDasharray', '4 1');
                     } else { cell.remove() }
                     break;
                 case "direct_asset":
@@ -292,7 +292,6 @@ class Editor extends React.Component {
                         case "risk":
                         case "threat_scenario":
                             result = "treats";
-                            cell.attr('line/stroke', 'green');
                             break;
                         default:
                             cell.remove();
@@ -308,7 +307,7 @@ class Editor extends React.Component {
                     cell.remove();
             }
 
-            
+            /*
             if (result !== "no_relation") {
                 cell.label(0, {
                     attrs: {
@@ -318,7 +317,8 @@ class Editor extends React.Component {
                     }
                 });
                 cell.attributes.relation = result;
-            }
+            }*/
+            cell.attributes.relation = result;
             //console.log("LABELS " + cell.labels());
             cell.attributes.relation = result;
             console.log(result);
@@ -337,6 +337,8 @@ class Editor extends React.Component {
         }
 
         var cellViewsBelow = this.paper.findViewsFromPoint(cell.getBBox().center());
+
+        console.log(cellViewsBelow);
 
         if (cellViewsBelow.length) {
             var cellViewBelow = _.find(cellViewsBelow, function (c) { return c.model.id !== cell.id });

@@ -322,7 +322,7 @@ function AddCorasShapes(joint) {
             position: {
                 distance: 0.5,
                 offset: 0,
-                //angle: 0,
+                angle: 0,
                 args: {
                     keepGradient: true
                 }
@@ -330,9 +330,10 @@ function AddCorasShapes(joint) {
         },
         attrs: {
             line: {
-                connection: true,
+                connection: 'paths',
                 stroke: '#333333',
                 strokeWidth: 2,
+                //strokeDasharray: '4 2',
                 strokeLineJoin: 'round',
                 targetMarker: {
                     'type': 'path',
