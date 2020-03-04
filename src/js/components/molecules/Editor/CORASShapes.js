@@ -10,7 +10,7 @@ function AddCorasShapes(joint) {
                 fillOpacity: 0,
                 refX: "-75%",
                 refY: "0",
-                magnet: true
+                magnet: 'true'
             },
             text: {
                 text: "Asset",

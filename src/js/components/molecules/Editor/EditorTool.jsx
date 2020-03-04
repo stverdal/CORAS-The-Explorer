@@ -20,6 +20,17 @@ const EditorToolBar = ({ beginMoveElement, svgs }) =>
                     shape.set('corasType', svg.corasType);
                     shape.set('typeStyles', svg.typeStyles);
                     shape.set('role', svg.role);
+                    // a bit careful with these, some assumptions are made
+                    // set custom fill color in ellipse and rect
+                    if (svg.fill) {
+                        shape.attr("body/fill", svg.fill);
+                        shape.attr("innerBody/fill", svg.fill);
+                    }
+                    // set magnet attribute, only used for vulnerabilities now.
+                    if (svg.magnet) { 
+                        shape.attr("linkHandler/magnet", svg.magnet);
+                    }
+
                     beginMoveElement(shape, svg.width, svg.height)
                 }}
                 key={i} >

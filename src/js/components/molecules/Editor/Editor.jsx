@@ -259,7 +259,7 @@ class Editor extends React.Component {
                         case "threat_scenario":
                         case "unwanted_incident":
                         case "risk":
-                            result = "initiates";
+                            //result = "initiates";
                             cell.attr('line/strokeDasharray', '3 6');
                             break;
                         default:
@@ -268,21 +268,24 @@ class Editor extends React.Component {
                     break;
                 case "threat_scenario":
                     if (target === "threat_scenario" || target === "unwanted_incident") {
-                        result = "leads_to";
+                        //result = "leads_to";
+                        result = "CONDITIONAL_PROBABLITY"
                     } else { cell.remove() }
                     break;
                 case "unwanted_incident":
                     if (target === "threat_scenario" || target === "unwanted_incident") {
-                        result = "leads_to";
+                        //result = "leads_to";
+                        result = "CONDITIONAL_PROBABLITY"
                     } else if (target === "direct_asset") {
-                        result = "impacts";
+                        //result = "impacts";
+                        result = "CONSEQUENCE";
                         cell.attr('line/strokeDasharray', '4 1');
                     } else { cell.remove() }
                     break;
                 case "direct_asset":
                 case "indirect_asset":
                     if (target === "direct_asset" || target === "indirect_asset") {
-                        result = "affects";
+                        //result = "affects";
                     } else { cell.remove() }
                     break;
                 case "treatment":
@@ -291,7 +294,7 @@ class Editor extends React.Component {
                         case "threat_source":
                         case "risk":
                         case "threat_scenario":
-                            result = "treats";
+                            //result = "treats";
                             break;
                         default:
                             cell.remove();
@@ -303,21 +306,26 @@ class Editor extends React.Component {
                         result = "impacts";
                     } else { cell.remove() }
                     break;
+                case "indicator":
+                    if (target === "vulnerability") {
+                        //result = "indicates";
+                    } else { cell.remove() }
+                    break;
                 default:
                     cell.remove();
             }
 
-            /*
+            
             if (result !== "no_relation") {
                 cell.label(0, {
                     attrs: {
                         text: {
-                            text: result
+                            text: '[' + result + ']'
                         }
                     }
                 });
                 cell.attributes.relation = result;
-            }*/
+            }
             cell.attributes.relation = result;
             //console.log("LABELS " + cell.labels());
             cell.attributes.relation = result;

@@ -41,7 +41,8 @@ const stakeholderHeight = 60;
 const accidentalHeight = 40;
 const deliberateHeight = 40;
 const nonHumanHeight = 40;
-const incidentHeight = 40;
+const incidentHeight = 30;
+const indicatorHeight = 40;
 const vulnerabilityHeight = 40;
 const treatmentHeight = 40;
 const expandHeight = 15;
@@ -239,6 +240,26 @@ export default [
                 role: "unwanted_incident"
             },
             {
+                shapeFn: () => new joint.shapes.coras.rectElement(),
+                width: 190,
+                height: 80,
+                //fill,
+                iconHeight: indicatorHeight,
+                icon: expand,
+                text: "Indicator",
+                corasType: 0,
+                typeStyles: {
+                    0: { "icon/href": expand, "body/strokeDasharray": "", "icon/height": indicatorHeight },
+                    1: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight },
+                    2: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight }
+                },
+                existsIn: {
+                    threat: true
+                },
+                role: "indicator",
+                fill: "#668FBA"
+            },
+            {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
                 width: 40,
                 height: 80,
@@ -254,7 +275,8 @@ export default [
                 existsIn: {
                     threat: true
                 },
-                role: "vulnerability"
+                role: "vulnerability",
+                magnet: 'passive'
             },
             {
                 shapeFn: () => new joint.shapes.coras.roundRectElement(),
@@ -468,6 +490,26 @@ export default [
                 role: "unwanted_incident"
             },
             {
+                shapeFn: () => new joint.shapes.coras.rectElement(),
+                width: 190,
+                height: 80,
+                //fill,
+                iconHeight: indicatorHeight,
+                icon: expand,
+                text: "Indicator",
+                corasType: 1,
+                typeStyles: {
+                    0: { "icon/href": expand, "body/strokeDasharray": "", "icon/height": indicatorHeight },
+                    1: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight },
+                    2: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight }
+                },
+                existsIn: {
+                    threat: true
+                },
+                role: "indicator",
+                fill: "#668FBA"
+            },
+            {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
                 width: 40,
                 height: 80,
@@ -483,7 +525,8 @@ export default [
                 existsIn: {
                     threat: true
                 },
-                role: "vulnerability"
+                role: "vulnerability",
+                magnet: "passive"
             },
             {
                 shapeFn: () => new joint.shapes.coras.roundRectElement(),
@@ -697,6 +740,26 @@ export default [
                 role: "unwanted_incident"
             },
             {
+                shapeFn: () => new joint.shapes.coras.rectElement(),
+                width: 190,
+                height: 80,
+                //fill,
+                iconHeight: indicatorHeight,
+                icon: expand,
+                text: "Indicator",
+                corasType: 2,
+                typeStyles: {
+                    0: { "icon/href": expand, "body/strokeDasharray": "", "icon/height": indicatorHeight },
+                    1: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight },
+                    2: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight }
+                },
+                existsIn: {
+                    threat: true
+                },
+                role: "indicator",
+                fill: "#668FBA"
+            },
+            {
                 shapeFn: () => new joint.shapes.coras.unboxedElement(),
                 width: 40,
                 height: 80,
@@ -712,7 +775,8 @@ export default [
                 existsIn: {
                     threat: true
                 },
-                role: "vulnerability"
+                role: "vulnerability",
+                magnet: "passive"
             },
             {
                 shapeFn: () => new joint.shapes.coras.roundRectElement(),
