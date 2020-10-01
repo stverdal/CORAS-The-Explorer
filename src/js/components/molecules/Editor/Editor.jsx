@@ -111,20 +111,25 @@ class Editor extends React.Component {
 
     getFromLocalStorage() {
         //console.log(this.props.currGraph.label);
-        var storedGraph = null;
         var currTab = 'asset'; //default choice
-        if (window.localStorage.getItem('currTab') != 0) {
+        //check if current tab is kept track of, if not set to the default; asset.
+        if (!window.localStorage.getItem('currTab')) {
             currTab = window.localStorage.getItem('currTab');
         }
+
+        var storedGraph = null;
         this.props.diagramTypes.map((type, i) => {
             storedGraph = window.localStorage.getItem(this.paperId + "graph_" + type);
             if (storedGraph) {
-                console.log(`Editor scale `, this.paper.scale())
+                //console.log(`Editor scale `, this.paper.scale())
                 this.props.setGraph(type, JSON.parse(storedGraph), this.paper.scale(), this.paper.translate());
+            } else {
+                //var placeHolder = new joint.dia.Graph();
+                //this.props.setGraph(type, placeHolder, this.paper.scale(), this.paper.translate());
             }
         });
-        console.log("Get from localstorage " + currTab);
         //window.localStorage.removeItem(this.paperId + "graph_" + currTab); // use if graph contains critical bug.
+        console.log(`ONLOAD RETURN: `, window.localStorage.getItem(this.paperId + "graph_" + currTab));
         return window.localStorage.getItem(this.paperId + "graph_" + currTab);
     }
 
@@ -154,6 +159,7 @@ class Editor extends React.Component {
         //console.log(`joint.dia.linkview `, joint.dia.LinkView), 
         //customLinkView.addTools(customToolsView)
 
+
         this.paper = new joint.dia.Paper({
             el: document.getElementById(this.paperId),
             model: this.graph, // change
@@ -176,14 +182,12 @@ class Editor extends React.Component {
             interactive: {vertexAdd: false},
         });
 
-        // Load graph from localStorage or props
-        //this.getFromLocalStorage();
+
+        console.log(`INITIAL PAPER`, this.paper)
+        // Load graph from localStorage if it exists,  upgrade efficiency
         if (this.getFromLocalStorage()) {
             this.graph.fromJSON(JSON.parse(this.getFromLocalStorage()));
             this.initGraph();
-        }
-        else if (this.props.initialDiagram) {
-            this.graph.fromJSON(this.props.initialDiagram); 
         }
 
         // Save in localStorage on change (or rather, every second currently)
@@ -219,11 +223,12 @@ class Editor extends React.Component {
             this.paper.on('blank:pointerup', this.endMovePaper);
             this.paper.on('element:sizeSelector:pointerdown', this.beginElementResize);
         }
+
         let currGraph = 'asset'; //TODO
-        if (window.localStorage.getItem('currTab') !== 0) {
+        if (!window.localStorage.getItem('currTab')) {
             currGraph = window.localStorage.getItem('currTab');
         }
-        console.log(`Current graph `,this.graph);
+        console.log(`Current graph `, currGraph);
         //console.log(window.localStorage);
         this.props.setCurrGraph(currGraph, this.graph.toJSON()); //TODO
     }
@@ -424,7 +429,7 @@ class Editor extends React.Component {
                 case "direct_asset":
                 case "indirect_asset":
                     if (target === "direct_asset" || target === "indirect_asset") {
-                        result = "affects";
+                        result = "impacts";
                     } else { 
                         cell.remove() 
                     }
@@ -853,7 +858,14 @@ class Editor extends React.Component {
     }
 
     // not sure how to do through redux
-    changeGraph(label, graph) {
+    changeGraph(label) {
+        var graph = new joint.dia.Graph(); //stupid hack
+        if (this.props.graphs[label].graph === null) {
+            this.props.setGraph(label, graph.toJSON(), this.paper.scale(), this.paper.translate());
+        } else {
+            graph.fromJSON(this.props.graphs[label].graph);
+        }
+
         //assume that graph is JSONgraph
         this.props.setGraph(this.props.currGraph.label, this.graph.toJSON(), this.paper.scale(), this.paper.translate());
         this.props.setCurrGraph(label, graph.toJSON());
@@ -863,8 +875,6 @@ class Editor extends React.Component {
         let {tx, ty} = this.props.graphs[label].position;
         this.paper.scale(sx, sy);
         this.paper.translate(tx, ty);
-        
-        //onsole.log(graph);
     }
 
     render() {
@@ -882,7 +892,6 @@ class Editor extends React.Component {
                     downloadFn={this.downloadSvg}
                     currDiagram={this.props.currGraph.label} />
                 <DiagramSelector
-                    paper={this.paper}
                     isInteractive={this.props.interactive}
                     handleScroll={this.handleScroll}
                     handleScrollBlank={this.handleScrollBlank}

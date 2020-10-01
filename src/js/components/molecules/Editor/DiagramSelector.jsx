@@ -30,15 +30,7 @@ const DiagramSelector = ({ paper, graphs, currGraph, setGraph, changeGraph, sele
             return;
         }
 
-        var graph = new joint.dia.Graph(); //stupid hack
-        if (graphs[diagramLabel].graph === null) {
-            graph = new joint.dia.Graph();
-            setGraph(diagramLabel, graph.toJSON(), paper.scale(), paper.translate());
-        } else {
-            graph.fromJSON(graphs[diagramLabel].graph);
-        }
-
-        changeGraph(diagramLabel, graph);
+        changeGraph(diagramLabel);
     };
 
     //Present the diagram type in a more human manner.

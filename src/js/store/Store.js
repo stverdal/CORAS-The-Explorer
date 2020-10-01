@@ -387,6 +387,7 @@ function Editor(state, action) {
             return newState;
 
         case ActionTypes.EDITOR.SET_GRAPH:
+            //console.log(`Set graph called! `, action.payload);
             let { label, graph, scale, position } = action.payload;
             //newState.graphs[label] = graph;
             newState.graphs[label] = {
@@ -394,8 +395,6 @@ function Editor(state, action) {
                 scale: scale,
                 position: position
             };
-            console.log("RED SUS")
-            console.log(`Position `, position)
             return newState;
 
         case ActionTypes.EDITOR.SET_CURR_GRAPH:
