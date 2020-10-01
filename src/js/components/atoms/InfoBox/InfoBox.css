@@ -1,0 +1,13 @@
+.infobox_content {
+    position: absolute;
+    z-index: 1000;
+    background-color: #FFF;
+    border: solid 1px darkblue;
+    width: 20rem;
+}
+
+.infobox_header {
+    padding-top: 0%;
+    padding-bottom: 0%;
+    border-radius: 0;
+}

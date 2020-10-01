@@ -1,5 +1,7 @@
 node_modules/
 dist/
 public/
+.vs/
 .cache
 package-lock.json
+CORAS_the_explorer.code-workspace

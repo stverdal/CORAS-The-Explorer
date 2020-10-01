@@ -9,9 +9,13 @@ import {
     ElementEditorSave,
     ElementEditorDelete,
     ElementLabelEdit,
+    ElementValueEdit,
     ElementChangeX,
     ElementChangeY,
-    ElementChangeType,
+    ElementChangeHeight,
+    ElementChangeWidth,
+    ElementChangeSize,
+    ElementChangePerspective,
     ToolElementRelease,
     MenuClearClicked,
     MenuClearConfirmed,
@@ -21,10 +25,10 @@ import {
     CellHandleMoved,
     SetGraph,
     SetCurrGraph,
-    SetPaper,
     SetCellResizing,
     SetElementPosition,
-    SetMovingLinks
+    SetMovingLinks,
+    ToggleInfoBox
 } from '../../../store/Actions';
 
 import Modal from '../../atoms/Modal/Modal';
@@ -32,13 +36,14 @@ import Modal from '../../atoms/Modal/Modal';
 import ElementEditor from './ElementEditor';
 import EditorTool from './EditorTool';
 import DiagramSelector from './DiagramSelector';
-import CellTool from './CellTool';
+//import CellTool from './CellTool';
 
 import "../../../../../node_modules/jointjs/dist/joint.css";
 import './editor.css';
 
 import AddCorasShapes from './CORASShapes.js';
 import ToolDefinitions from './ToolDefinitions';
+import InfoBox from '../../atoms/InfoBox/InfoBox';
 
 AddCorasShapes(joint);
 
@@ -80,6 +85,8 @@ class Editor extends React.Component {
         this.clearGraph = this.clearGraph.bind(this);
         this.downloadSvg = this.downloadSvg.bind(this);
         this.changeGraph = this.changeGraph.bind(this);
+        this.attachTools = this.attachTools.bind(this);
+        this.initGraph =  this.initGraph.bind(this);
 
         this.paperId = this.props.paperId || 'paper-holder';
         this.paperWrapperId = `${this.paperId}-wrapper`;
@@ -91,11 +98,13 @@ class Editor extends React.Component {
         this.beginElementResize = this.beginElementResize.bind(this);
         this.onHover = this.onHover.bind(this);
         this.exitHover = this.exitHover.bind(this);
+        this.toggleInfo = this.toggleInfo.bind(this);
     }
 
     saveToLocalStorage() {
         // might want to update redux state here, or update store more frequently
         window.localStorage.setItem(this.paperId + "graph_" + this.props.currGraph.label, JSON.stringify(this.graph.toJSON()));
+        //console.log(this.props.currGraph.label);
         window.localStorage.setItem('currTab', this.props.currGraph.label);
     }
 
@@ -109,17 +118,42 @@ class Editor extends React.Component {
         this.props.diagramTypes.map((type, i) => {
             storedGraph = window.localStorage.getItem(this.paperId + "graph_" + type);
             if (storedGraph) {
-                this.props.setGraph(type, JSON.parse(storedGraph));
+                console.log(`Editor scale `, this.paper.scale())
+                this.props.setGraph(type, JSON.parse(storedGraph), this.paper.scale(), this.paper.translate());
             }
         });
         console.log("Get from localstorage " + currTab);
+        //window.localStorage.removeItem(this.paperId + "graph_" + currTab); // use if graph contains critical bug.
         return window.localStorage.getItem(this.paperId + "graph_" + currTab);
+    }
+
+    toggleInfo() {
+        if (this.props.infoBox.visible) {
+            this.props.toggleInfoBox({x:0,y:0}, false, "", "");
+        }
     }
 
     componentDidMount() {
         const arrowheadShape = 'M 10 0 L 0 5 L 10 10 z';
 
         var graph = new joint.dia.Graph();
+
+        //this allows the addition of vertices on link dbl click.
+        var customLinkView = joint.dia.LinkView.extend({
+            pointerdown: function(evt, x, y) {
+                console.log('POINTERDOWN BOIS');
+                if (evt.which === 3 || evt.button === 2) {
+                    evt.preventDefault();
+                    return;
+                }
+                this.addVertex(x,y);
+            }
+        });
+
+        //console.log(`Linkview: `, customLinkView)
+        //console.log(`joint.dia.linkview `, joint.dia.LinkView), 
+        //customLinkView.addTools(customToolsView)
+
         this.paper = new joint.dia.Paper({
             el: document.getElementById(this.paperId),
             model: this.graph, // change
@@ -137,27 +171,45 @@ class Editor extends React.Component {
                         d: arrowheadShape
                     }
                 }
-            })
+            }),
+            linkView: customLinkView,
+            interactive: {vertexAdd: false},
         });
 
         // Load graph from localStorage or props
         //this.getFromLocalStorage();
-        if (this.getFromLocalStorage()) this.graph.fromJSON(JSON.parse(this.getFromLocalStorage()));
-        else if (this.props.initialDiagram) this.graph.fromJSON(this.props.initialDiagram);
+        if (this.getFromLocalStorage()) {
+            this.graph.fromJSON(JSON.parse(this.getFromLocalStorage()));
+            this.initGraph();
+        }
+        else if (this.props.initialDiagram) {
+            this.graph.fromJSON(this.props.initialDiagram); 
+        }
 
         // Save in localStorage on change (or rather, every second currently)
         this.periodicalSave = setInterval(this.saveToLocalStorage, 1000);
 
         window.addEventListener('resize', this.updatePaperSize);
+        window.addEventListener("mousedown", this.toggleInfo);
 
         if (this.props.interactive === undefined ? true : this.props.interactive) {
             this.paper.on('cell:contextmenu', (elementView, e, x, y) => this.props.elementDoubleClicked(elementView.model, e));
-            this.paper.on('cell:pointerdblclick', (elementView, e, x, y) => this.props.elementDoubleClicked(elementView.model, e));
+            //this.paper.on('cell:pointerdblclick', (elementView, e, x, y) => this.props.elementDoubleClicked(elementView.model, e));
+            this.paper.on('element:pointerdblclick', (elementView, e, x, y) => this.props.elementDoubleClicked(elementView.model, e));
             this.paper.on('cell:pointerup', this.embedElement);
             this.paper.on('cell:pointerdown', this.unembedElement);
-            this.paper.on('cell:pointermove', this.resizeElement);
-            this.paper.on('cell:mouseenter', this.onHover);
-            this.paper.on('cell:mouseleave', this.exitHover);
+            this.paper.on('element:pointermove', this.resizeElement);
+            this.paper.on('element:mouseenter', this.onHover);
+            this.paper.on('element:mouseleave', this.exitHover);
+
+            this.paper.on('link:mouseenter', function(linkView) {
+                console.log(`Showtools `,linkView.showTools())
+                linkView.showTools();
+            });
+        
+            this.paper.on('link:mouseleave', function(linkView) {
+                linkView.hideTools();
+            });
 
             this.paper.on('cell:mousewheel', this.handleScroll);
             this.paper.on('blank:mousewheel', this.handleScrollBlank);
@@ -171,9 +223,47 @@ class Editor extends React.Component {
         if (window.localStorage.getItem('currTab') !== 0) {
             currGraph = window.localStorage.getItem('currTab');
         }
-        console.log(currGraph);
-        console.log(window.localStorage);
+        console.log(`Current graph `,this.graph);
+        //console.log(window.localStorage);
         this.props.setCurrGraph(currGraph, this.graph.toJSON()); //TODO
+    }
+
+    //TODO, understand this better.
+    attachTools(link) {
+        //Create tools for link
+        var linkView = link.findView(this.paper);
+        console.log(`AttachTools Linkview `, linkView);
+
+        //combine tools in a view
+        var verticesTool = new joint.linkTools.Vertices({
+            vertexAdding:false
+        });
+        var segmentsTool = new joint.linkTools.Segments();
+        var boundaryTool = new joint.linkTools.Boundary();
+        var removeButton = new joint.linkTools.Remove();
+
+        var customToolsView = new joint.dia.ToolsView({
+            tools: [
+                verticesTool,
+                segmentsTool, 
+                boundaryTool,
+                removeButton
+            ]
+        });
+
+        //add toolview to the linkview that is attached to link
+        linkView.addTools(customToolsView);
+        linkView.hideTools();
+    }
+
+    //Unsure if this is required, or just a sideeffect of my hacky implementation... probably the latter.
+    //this attached the toolview to all links in the graph. Called on when graph is loaded from storage.
+    initGraph() {
+        this.graph.attributes.cells.models.map((model) => {
+            if (model.attributes.type === 'coras.defaultLink') {
+                this.attachTools(model);
+            }
+        })
     }
 
     testEvent(cellView, e, x, y) {
@@ -184,10 +274,12 @@ class Editor extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.updatePaperSize);
+        window.removeEventListener('mousedown', this.toggleInfo);
         clearInterval(this.periodicalSave);
     }
 
     handleScroll(cellView, e, x, y, delta) {
+        e.preventDefault();
         const scaleFactor = 1.1;
         const currentScale = this.paper.scale();
 
@@ -209,6 +301,14 @@ class Editor extends React.Component {
     unembedElement(cellView, evt, x, y) {
         var cell = cellView.model;
 
+        //if link return, no need to prepare for embedding
+        if (cell.attributes.type === 'coras.defaultLink') {
+            return;
+        }
+        
+        console.log('unembedElement')
+
+        //if link exit
         this.setState({ elementPosition: cell.attributes.position });
 
         if (!cell.get('embeds') || cell.get('embeds').length === 0) {
@@ -239,19 +339,14 @@ class Editor extends React.Component {
 
     embedElement(cellView, evt, x, y) {
         var cell = cellView.model;
-
         if (cell.attributes.type === 'coras.defaultLink') {
-            //link dropped
-            console.log("link");
-            console.log(cell);
             var source = cell.getSourceElement().attributes.role;
             var target;
             if (cell.getTargetElement()) {
                 target = cell.getTargetElement().attributes.role;
             }
-            console.log(source);
-            console.log(target);
             var result = 'no_relation';
+            var valType = 'NA';
 
             switch (source) {
                 case "threat_source":
@@ -259,7 +354,8 @@ class Editor extends React.Component {
                         case "threat_scenario":
                         case "unwanted_incident":
                         case "risk":
-                            //result = "initiates";
+                            result = "INITIATES";
+                            //Should we allow for probabilties on an initaites relation?
                             cell.attr('line/strokeDasharray', '3 6');
                             break;
                         default:
@@ -267,25 +363,27 @@ class Editor extends React.Component {
                     }
                     break;
                 case "threat_scenario":
-                    if (target === "threat_scenario" || target === "unwanted_incident") {
+                    if (target === "threat_scenario" || target === "unwanted_incident" || target === "risk") {
                         //result = "leads_to";
                         result = "CONDITIONAL_PROBABLITY"
+                        valType = "Conditional probability"
                     } else { cell.remove() }
                     break;
                 case "unwanted_incident":
                     if (target === "threat_scenario" || target === "unwanted_incident") {
                         //result = "leads_to";
                         result = "CONDITIONAL_PROBABLITY"
+                        valType = "Conditional probability"
                     } else if (target === "direct_asset") {
                         //result = "impacts";
                         result = "CONSEQUENCE";
-                        cell.attr('line/strokeDasharray', '4 1');
+                        cell.attr('line/strokeDasharray', '6 4');
                     } else { cell.remove() }
                     break;
                 case "direct_asset":
                 case "indirect_asset":
                     if (target === "direct_asset" || target === "indirect_asset") {
-                        //result = "affects";
+                        result = "affects";
                     } else { cell.remove() }
                     break;
                 case "treatment":
@@ -294,7 +392,7 @@ class Editor extends React.Component {
                         case "threat_source":
                         case "risk":
                         case "threat_scenario":
-                            //result = "treats";
+                            result = "treats";
                             break;
                         default:
                             cell.remove();
@@ -302,34 +400,78 @@ class Editor extends React.Component {
                     }
                     break;
                 case "risk":
-                    if (target === "direct_asset") {
-                        result = "impacts";
-                    } else { cell.remove() }
+                    switch (target) {
+                        case "direct_asset":
+                        case "indirect_asset":
+                            result = "impacts";
+                            cell.attr('line/strokeDasharray', '6 4');
+                            break;
+                        default:
+                            cell.remove();
+                    }
                     break;
                 case "indicator":
-                    if (target === "vulnerability") {
-                        //result = "indicates";
-                    } else { cell.remove() }
+                    switch(target) {
+                        case "vulnerability":
+                        case "threat_scenario":
+                        case "unwanted_incident":
+                        case "risk":
+                            result = 'indicates';
+                            break;
+                        default:
+                            cell.remove();
+                    }
                     break;
                 default:
                     cell.remove();
             }
 
             
-            if (result !== "no_relation") {
+            if (result !== "no_relation" && !cell.label(0)) {
+                this.attachTools(cell); //attach a toolview to the cell.
+                //change this to fit the overall goal. label vs attribute.
                 cell.label(0, {
                     attrs: {
                         text: {
-                            text: '[' + result + ']'
+                            text: ''
                         }
+                    },
+                    position: {
+                        offset: -10
                     }
                 });
                 cell.attributes.relation = result;
             }
-            cell.attributes.relation = result;
+            if (valType != "NA" && !cell.label(1)) {
+                cell.label(1, {
+                    attrs: {
+                        text: {
+                            text: ''
+                        }
+                    },
+                    position: {
+                        offset: 10
+                    }
+                });
+                cell.attributes.valueType = valType;
+            } else if (!cell.label(1)) { // first attempt
+                cell.label(1, {
+                    attrs: {
+                        text: {
+                            text: ''  
+                        }
+                    },
+                    position: {
+                        offset: 10
+                    }
+                });
+            }
+            //console.log('Cell test');
+            //console.log(cell);
+            //console.log(cell.attributes.valueType); //undefined on some links...
             //console.log("LABELS " + cell.labels());
             cell.attributes.relation = result;
-            console.log(result);
+            //console.log(result);
 
             return;
         }
@@ -350,7 +492,7 @@ class Editor extends React.Component {
 
         if (cellViewsBelow.length) {
             var cellViewBelow = _.find(cellViewsBelow, function (c) { return c.model.id !== cell.id });
-            if (cellViewBelow && cellViewBelow.model.get('parent') !== cell.id) {
+            if (cellViewBelow && cellViewBelow.model.get('parent') !== cell.id && cellViewBelow.model.attributes.role == "stakeholder") {
                 cellViewBelow.model.embed(cell);
             }
         }
@@ -421,6 +563,7 @@ class Editor extends React.Component {
 
             // If no links or vertices return
             if (!this.state.movingLinks) {
+                console.log('test');
                 return;
             }
 
@@ -494,6 +637,7 @@ class Editor extends React.Component {
         newHeight = (newHeight < minSize) ? minSize : newHeight;
 
         console.log(newWidth + "  " + newHeight);
+        //set this as part of state?
         cellView.model.set({
             position: { x: newPosX, y: newPosY },
             size: { width: newWidth, height: newHeight }
@@ -522,8 +666,9 @@ class Editor extends React.Component {
     }
 
     onHover(cellView, evt) {
-        console.log(cellView);
+        //console.log(cellView);
         if (cellView.model.attributes.type !== 'coras.roundRectElement') {
+            cellView.showTools()
             return;
         }
 
@@ -542,7 +687,7 @@ class Editor extends React.Component {
     }
 
     exitHover(cellView, evt) {
-        var cell = cellView.model;
+        //var cell = cellView.model;
         if (cellView.model.attributes.type !== 'coras.roundRectElement') {
             return;
         }
@@ -667,11 +812,17 @@ class Editor extends React.Component {
     // not sure how to do through redux
     changeGraph(label, graph) {
         //assume that graph is JSONgraph
-        this.props.setGraph(this.props.currGraph.label, this.graph.toJSON());
+        this.props.setGraph(this.props.currGraph.label, this.graph.toJSON(), this.paper.scale(), this.paper.translate());
         this.props.setCurrGraph(label, graph.toJSON());
         //this.paper.model = graph; 
         this.graph.fromJSON(graph.toJSON());
-        console.log(graph);
+        console.log(`Setting position to `,this.props.graphs[label].position)
+        let {sx, sy } = this.props.graphs[label].scale;
+        let {tx, ty} = this.props.graphs[label].position;
+        this.paper.scale(sx, sy);
+        this.paper.translate(tx, ty);
+        
+        //onsole.log(graph);
     }
 
     render() {
@@ -689,8 +840,7 @@ class Editor extends React.Component {
                     downloadFn={this.downloadSvg}
                     currDiagram={this.props.currGraph.label} />
                 <DiagramSelector
-                    paperId={this.paperId}
-                    paperWrapperId={this.paperWrapperId}
+                    paper={this.paper}
                     isInteractive={this.props.interactive}
                     handleScroll={this.handleScroll}
                     handleScrollBlank={this.handleScrollBlank}
@@ -706,9 +856,16 @@ class Editor extends React.Component {
                     save={this.props.elementEditorSave}
                     delete={this.props.elementEditorDelete}
                     labelOnChange={this.props.elementEditorLabelEdit}
+                    valueOnChange={this.props.elementEditorValueEdit}
                     xOnChange={this.props.elementEditorChangeX}
                     yOnChange={this.props.elementEditorChangeY}
-                    typeOnChange={this.props.elementEditorChangeType} /> : null}
+                    heightChange={this.props.elementEditorChangeHeight}
+                    widthChange={this.props.elementEditorChangeWidth}
+                    sizeChange={this.props.elementEditorChangeSize}
+                    perspectiveOnChange={this.props.elementEditorChangePerspective} /> : null}
+                {this.props.infoBox.visible  ? 
+                    <InfoBox />
+                : null}
                 <div
                     id={this.paperWrapperId}
                     className="editor-paper"
@@ -750,12 +907,14 @@ export default connect((state) => ({
     cellTool: state.editor.cellTool,
     cellToolWidth: state.editor.cellTool.size.width,
     cellToolHeight: state.editor.cellTool.size.height,
+    graphs: state.editor.graphs,
     currGraph: state.editor.currGraph,
     diagramTypes: state.editor.diagramTypes,
     cellResizing: state.editor.cellResizing,
     elementPosition: state.editor.elementPosition,
     movingLinks: state.editor.movingLinks,
-    newElement: state.editor.movement.element
+    newElement: state.editor.movement.element,
+    infoBox: state.editor.infoBox
 
 }), (dispatch) => ({
     elementRightClicked: (element, graph) => dispatch(ElementRightClicked(element, graph)),
@@ -764,9 +923,13 @@ export default connect((state) => ({
     elementEditorSave: () => dispatch(ElementEditorSave()),
     elementEditorDelete: () => dispatch(ElementEditorDelete()),
     elementEditorLabelEdit: (label) => dispatch(ElementLabelEdit(label)),
+    elementEditorValueEdit: (value) => dispatch(ElementValueEdit(value)),
     elementEditorChangeX: (x) => dispatch(ElementChangeX(x)),
     elementEditorChangeY: (y) => dispatch(ElementChangeY(y)),
-    elementEditorChangeType: (type) => dispatch(ElementChangeType(type)),
+    elementEditorChangeHeight: (height) => dispatch(ElementChangeHeight(height)),
+    elementEditorChangeWidth: (width) => dispatch(ElementChangeWidth(width)),
+    elementEditorChangeSize: (size) => dispatch(ElementChangeSize(size)),
+    elementEditorChangePerspective: (perspective) => dispatch(ElementChangePerspective(perspective)),
     elementDropped: (graph, pageX, pageY) => dispatch(ToolElementRelease(graph, pageX, pageY)),
     clearClicked: (e) => dispatch(MenuClearClicked(e)),
     clearConfirmed: () => dispatch(MenuClearConfirmed()),
@@ -775,10 +938,10 @@ export default connect((state) => ({
     cellHandleReleased: () => dispatch(CellHandleRelased()),
     cellHandleMoved: (width, height) => dispatch(CellHandleMoved(width, height)),
     clearGraph: (label) => dispatch(ClearGraph(label)),
-    setGraph: (label, graph) => dispatch(SetGraph(label, graph)),
+    setGraph: (label, graph, scale, position) => dispatch(SetGraph(label, graph, scale, position)),
     setCurrGraph: (label, graph) => dispatch(SetCurrGraph(label, graph)),
-    setPaper: (paper) => dispatch(SetPaper(paper)),
     setCellResizing: (boolean) => dispatch(SetCellResizing(boolean)),
     setElementPosition: (pos) => dispatch(SetElementPosition(pos)),
-    setMovingLinks: (arr) => dispatch(SetMovingLinks(arr))
+    setMovingLinks: (arr) => dispatch(SetMovingLinks(arr)),
+    toggleInfoBox: (pos, bool, category, id) => dispatch(ToggleInfoBox(pos, bool, category, id))
 }))(Editor);

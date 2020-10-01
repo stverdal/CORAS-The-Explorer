@@ -60,6 +60,12 @@ function AddCorasShapes(joint) {
                 textVerticalAnchor: 'middle',
                 textAnchor: 'middle'
             },
+            value: {
+                refX: "50%",
+                refY: "70%",
+                textVerticalAnchor: 'middle',
+                textAnchor: 'middle'
+            },
             icon: {
                 refWidth: "40%",
                 refHeight: "40%",
@@ -84,6 +90,10 @@ function AddCorasShapes(joint) {
             {
                 tagName: "text",
                 selector: "text"
+            },
+            {
+                tagName: "text",
+                selector: "value"
             }
         ]
     });
@@ -113,9 +123,15 @@ function AddCorasShapes(joint) {
             },
             text: {
                 refX: "50%",
-                refY: "50%",
+                refY: "40%",
                 textVerticalAnchor: "middle",
                 textAnchor: "middle"
+            },
+            value: {
+                refX: "50%",
+                refY: "70%",
+                textVerticalAnchor: 'middle',
+                textAnchor: 'middle'
             }
         }
     }, {
@@ -135,6 +151,10 @@ function AddCorasShapes(joint) {
             {
                 tagName: "text",
                 selector: "text"
+            },
+            {
+                tagName: "text",
+                selector: "value"
             }
         ]
     });
@@ -164,10 +184,16 @@ function AddCorasShapes(joint) {
             },
             text: {
                 refX: "50%",
-                refY: "50%",
+                refY: "40%",
                 textVerticalAnchor: "middle",
                 textAnchor: "middle"
-            }
+            },
+            value: {
+                refX: "50%",
+                refY: "70%",
+                textVerticalAnchor: 'middle',
+                textAnchor: 'middle'
+            },
         }
     }, {
         markup: [
@@ -186,6 +212,10 @@ function AddCorasShapes(joint) {
             {
                 tagName: "text",
                 selector: "text"
+            },
+            {
+                tagName: "text",
+                selector: "value"
             }
         ]
     });

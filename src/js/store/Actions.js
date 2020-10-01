@@ -30,6 +30,11 @@ export const ElementLabelEdit = (label) => ({
     payload: { label }
 });
 
+export const ElementValueEdit = (value) => ({
+    type: ActionTypes.EDITOR.ELEMENT_VALUE_EDIT,
+    payload: { value }
+});
+
 export const ElementChangeX = (x) => ({
     type: ActionTypes.EDITOR.ELEMENT_CHANGE_X,
     payload: { x }
@@ -40,9 +45,30 @@ export const ElementChangeY = (y) => ({
     payload: { y }
 });
 
-export const ElementChangeType = (type) => ({
-    type: ActionTypes.EDITOR.ELEMENT_CHANGE_TYPE,
-    payload: { type }
+//consider a single action for both width and height
+export const ElementChangeWidth = (width) => ({
+    type: ActionTypes.EDITOR.ELEMENT_CHANGE_WIDTH,
+    payload: { width }
+});
+
+export const ElementChangeHeight = (height) => ({
+    type: ActionTypes.EDITOR.ELEMENT_CHANGE_HEIGHT,
+    payload: { height }
+});
+//TODO delete
+export const ElementChangeSize = (height, width) => ({
+    type: ActionTypes.EDITOR.ELEMENT_CHANGE_SIZE,
+    payload: { height, width }
+});
+
+export const ElementChangeFontSize = (fontsize) => ({
+    type: ActionTypes.EDITOR.ELEMENT_CHANGE_FONTSIZE,
+    payload: { fontsize }
+});
+
+export const ElementChangePerspective = (perspective) => ({
+    type: ActionTypes.EDITOR.ELEMENT_CHANGE_PERSPECTIVE,
+    payload: { perspective }
 });
 
 export const ToolElementClicked = (element, width, height) => ({
@@ -93,9 +119,9 @@ export const ClearGraph = (label) => ({
     payload: { label }
 });
 
-export const SetGraph = (label, graph) => ({
+export const SetGraph = (label, graph, scale, position) => ({
     type: ActionTypes.EDITOR.SET_GRAPH,
-    payload: { label, graph }
+    payload: { label, graph, scale, position }
 });
 
 export const SetCurrGraph = (label, graph) => ({
@@ -126,4 +152,9 @@ export const SetElementPosition = (pos) => ({
 export const SetMovingLinks = (arr) => ({
     type: ActionTypes.EDITOR.SET_MOVING_LINKS,
     payload: { arr }
+});
+
+export const ToggleInfoBox = (pos, bool, category, id) => ({
+    type: ActionTypes.EDITOR.TOGGLE_INFO_BOX,
+    payload: { pos, bool, category, id }
 });

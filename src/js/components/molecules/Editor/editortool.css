@@ -8,12 +8,22 @@
     align-content: flex-start;
 }
 
+.editor-tabrow__tablink {
+    cursor: pointer;
+ }
+
 .editor-tabrow__tab {
     margin-right: .5rem;
-    background-color: darkblue;
+    background-color: slategray;
     color: white;
     padding: .5rem;
     display: inline-block;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+}
+
+.editor-tabrow__tab:hover {
+    background-color: rgb(161, 174, 187);
 }
 
 .editor-tabrow__tab--selected {
@@ -24,10 +34,13 @@
     border-right: solid 1px #000;
     position: relative;
     top: 1px;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    box-shadow: 0px -3px 3px 0px #888888;
 }
 
-.editor-tabrow__tablink {
-    cursor: pointer;
+.editor-tabrow__tab--selected:hover {
+    background-color: white;
 }
 
 .editor-toolbox {

@@ -1,10 +1,12 @@
 ﻿import React from 'react';
+import { useState } from 'react';
 import joint from 'jointjs';
 import { connect } from 'react-redux';
 import {
     ElementDoubleClicked,
     SetGraph,
-    SetCurrGraph
+    SetCurrGraph,
+    ToggleInfoBox
 } from '../../../store/Actions';
 
 
@@ -17,26 +19,45 @@ import AddCorasShapes from './CORASShapes.js';
 AddCorasShapes(joint);
 
 
-const DiagramSelector = ({ graphs, currGraph, setGraph, changeGraph, selectedTab, diagramOptions }) => {
+const DiagramSelector = ({ paper, graphs, currGraph, setGraph, changeGraph, selectedTab, diagramOptions, toggleInfoBox }) => {
+    
+    const [isShown, setIsShown] = useState(false);
 
     const switchDiagram = diagramLabel => {
         //check if diagram exists
         // save current diagram
-        console.log("SWITCH");
         if (diagramLabel === currGraph.label) {
             return;
         }
 
         var graph = new joint.dia.Graph(); //stupid hack
-        if (graphs[diagramLabel] === null) {
+        if (graphs[diagramLabel].graph === null) {
             graph = new joint.dia.Graph();
-            setGraph(diagramLabel, graph.toJSON());
+            console.log(`DS scale `, paper.scale())
+            setGraph(diagramLabel, graph.toJSON(), paper.scale(), paper.translate());
         } else {
-            graph.fromJSON(graphs[diagramLabel]);
+            graph.fromJSON(graphs[diagramLabel].graph);
         }
 
         changeGraph(diagramLabel, graph);
     };
+
+    //Present the diagram type in a more human manner.
+    // currently introduces some glitches?
+    const parseDName = (currElem) => {
+        var dName = currElem.charAt(0).toUpperCase() + currElem.slice(1);
+        dName = dName.replace('_', ' '); 
+        return dName;
+    }
+
+    const displayInfo = (e, currElem) => {
+        e.preventDefault();
+        console.log(currElem)
+        toggleInfoBox({
+            x: e.clientX,
+            y: e.clientY
+        }, true, "diagrams", currElem);
+    }
 
     return (
         <div className="diagram-tabrow">
@@ -44,10 +65,16 @@ const DiagramSelector = ({ graphs, currGraph, setGraph, changeGraph, selectedTab
                 <a
                     onClick={() => switchDiagram(currElem)}
                     key={i}
+                    onContextMenu={(e) => displayInfo(e, currElem)}
                     className="diagram-tabrow__tablink">
                     <div
-                        className={`diagram-tabrow__tab${currElem === selectedTab ? " diagram-tabrow__tab--selected" : ""}`}>{currElem}
+                        className={`diagram-tabrow__tab${currElem === selectedTab ? " diagram-tabrow__tab--selected" : ""}`}>{parseDName(currElem)}
                     </div>
+                    {isShown && (
+                    <div>
+                        {i}
+                    </div>
+                )}
                 </a>
             )}
         </div>
@@ -59,11 +86,10 @@ export default connect((state) => ({
     currGraph: state.editor.currGraph,
     selectedTab: state.editor.currGraph.label,
     diagramOptions: state.editor.diagramTypes,
-    paper: state.editor.paper
 }), (dispatch) => ({
     elementDoubleClicked: (element, event) => dispatch(ElementDoubleClicked(element, event)),
     clearGraph: (label) => dispatch(ClearGraph(label)),
-    setGraph: (label, graph) => dispatch(SetGraph(label, graph)),
+    setGraph: (label, graph, scale, position) => dispatch(SetGraph(label, graph, scale, position)),
     setCurrGraph: (label, graph) => dispatch(SetCurrGraph(label, graph)),
-    setPaper: (paper) => dispatch(SetPaper(paper))
+    toggleInfoBox: (pos, bool, category, id) => dispatch(ToggleInfoBox(pos, bool, category, id))
 }))(DiagramSelector);
