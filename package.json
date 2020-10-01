@@ -17,11 +17,11 @@
     "website"
   ],
   "author": "Håkon Antonsen",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/SINTEF-9012/CORAS-The-Explorer/issues"
+    "url": "https://github.com/stverdal/CORAS-The-Explorer"
   },
-  "homepage": "https://github.com/SINTEF-9012/CORAS-The-Explorer#readme",
+  "homepage": "https://github.com/stverdal/CORAS-The-Explorer#readme",
   "dependencies": {
     "backbone": "^1.3.3",
     "gojs": "^1.8.18",

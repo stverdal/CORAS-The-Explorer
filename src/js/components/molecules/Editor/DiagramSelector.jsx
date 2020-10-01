@@ -33,7 +33,6 @@ const DiagramSelector = ({ paper, graphs, currGraph, setGraph, changeGraph, sele
         var graph = new joint.dia.Graph(); //stupid hack
         if (graphs[diagramLabel].graph === null) {
             graph = new joint.dia.Graph();
-            console.log(`DS scale `, paper.scale())
             setGraph(diagramLabel, graph.toJSON(), paper.scale(), paper.translate());
         } else {
             graph.fromJSON(graphs[diagramLabel].graph);
@@ -52,7 +51,6 @@ const DiagramSelector = ({ paper, graphs, currGraph, setGraph, changeGraph, sele
 
     const displayInfo = (e, currElem) => {
         e.preventDefault();
-        console.log(currElem)
         toggleInfoBox({
             x: e.clientX,
             y: e.clientY

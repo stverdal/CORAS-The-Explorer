@@ -87,6 +87,7 @@ class Editor extends React.Component {
         this.changeGraph = this.changeGraph.bind(this);
         this.attachTools = this.attachTools.bind(this);
         this.initGraph =  this.initGraph.bind(this);
+        this.visualizeRelation = this.visualizeRelation.bind(this);
 
         this.paperId = this.props.paperId || 'paper-holder';
         this.paperWrapperId = `${this.paperId}-wrapper`;
@@ -141,7 +142,6 @@ class Editor extends React.Component {
         //this allows the addition of vertices on link dbl click.
         var customLinkView = joint.dia.LinkView.extend({
             pointerdown: function(evt, x, y) {
-                console.log('POINTERDOWN BOIS');
                 if (evt.which === 3 || evt.button === 2) {
                     evt.preventDefault();
                     return;
@@ -278,6 +278,51 @@ class Editor extends React.Component {
         clearInterval(this.periodicalSave);
     }
 
+    visualizeRelation(link, relation) {
+        console.log('visualize ', relation)
+        var arrowheadShape = 'M 10 -5 L -2 0 L 10 5 z';
+        var fill = 'black';
+        var strokeWidth = 10;
+
+        switch (relation) {
+            case 'initiates':
+                arrowheadShape = 'M 15 -6 L -2 0 L 15 6';
+                fill = 'none';
+                strokeWidth = 6;
+                //TODO
+                break;
+            case 'leads_to': 
+                //default settings
+                break;
+            case 'impacts': 
+                arrowheadShape = 'M 8 -5 L -2 0 L 8 5 M -2 0 L 18 0 M 18 -5 L 8 0 L 18 5';
+                fill = 'none';
+                break;
+            case 'treats': 
+                console.log(`treats`);
+                link.attr('line/strokeDasharray', '10 5');
+                arrowheadShape = "M 0 0 a 5 5 0 1 1 10 0 a 5 5 0 1 1 -10 0 ";
+                fill = 'white';
+                break;
+        }
+        link.attr('line/targetMarker', { 
+            d: arrowheadShape,
+            stroke: 'black',
+            fill: fill,
+            strokeWidth: 10
+
+        });
+        /*link.attr({
+            line: {
+                targetMarker: {
+                    'type': 'Path',
+                    'd': arrowheadShape
+                }
+            }
+        }); */
+        return link;
+    }
+
     handleScroll(cellView, e, x, y, delta) {
         e.preventDefault();
         const scaleFactor = 1.1;
@@ -354,9 +399,7 @@ class Editor extends React.Component {
                         case "threat_scenario":
                         case "unwanted_incident":
                         case "risk":
-                            result = "INITIATES";
-                            //Should we allow for probabilties on an initaites relation?
-                            cell.attr('line/strokeDasharray', '3 6');
+                            result = "initiates";
                             break;
                         default:
                             cell.remove();
@@ -364,27 +407,27 @@ class Editor extends React.Component {
                     break;
                 case "threat_scenario":
                     if (target === "threat_scenario" || target === "unwanted_incident" || target === "risk") {
-                        //result = "leads_to";
-                        result = "CONDITIONAL_PROBABLITY"
+                        result = "leads_to";
                         valType = "Conditional probability"
                     } else { cell.remove() }
                     break;
                 case "unwanted_incident":
                     if (target === "threat_scenario" || target === "unwanted_incident") {
-                        //result = "leads_to";
-                        result = "CONDITIONAL_PROBABLITY"
+                        result = "leads_to";
                         valType = "Conditional probability"
                     } else if (target === "direct_asset") {
-                        //result = "impacts";
-                        result = "CONSEQUENCE";
-                        cell.attr('line/strokeDasharray', '6 4');
-                    } else { cell.remove() }
+                        result = "impacts";
+                    } else { 
+                        cell.remove() 
+                    }
                     break;
                 case "direct_asset":
                 case "indirect_asset":
                     if (target === "direct_asset" || target === "indirect_asset") {
                         result = "affects";
-                    } else { cell.remove() }
+                    } else { 
+                        cell.remove() 
+                    }
                     break;
                 case "treatment":
                     switch (target) {
@@ -404,7 +447,6 @@ class Editor extends React.Component {
                         case "direct_asset":
                         case "indirect_asset":
                             result = "impacts";
-                            cell.attr('line/strokeDasharray', '6 4');
                             break;
                         default:
                             cell.remove();
@@ -428,6 +470,7 @@ class Editor extends React.Component {
 
             
             if (result !== "no_relation" && !cell.label(0)) {
+                this.visualizeRelation(cell, result);
                 this.attachTools(cell); //attach a toolview to the cell.
                 //change this to fit the overall goal. label vs attribute.
                 cell.label(0, {
@@ -816,7 +859,6 @@ class Editor extends React.Component {
         this.props.setCurrGraph(label, graph.toJSON());
         //this.paper.model = graph; 
         this.graph.fromJSON(graph.toJSON());
-        console.log(`Setting position to `,this.props.graphs[label].position)
         let {sx, sy } = this.props.graphs[label].scale;
         let {tx, ty} = this.props.graphs[label].position;
         this.paper.scale(sx, sy);
