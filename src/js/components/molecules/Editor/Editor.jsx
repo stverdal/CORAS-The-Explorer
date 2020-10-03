@@ -114,10 +114,9 @@ class Editor extends React.Component {
         //console.log(this.props.currGraph.label);
         var currTab = 'asset'; //default choice
         //check if current tab is kept track of, if not set to the default; asset.
-        if (!window.localStorage.getItem('currTab')) {
+        if (window.localStorage.getItem('currTab') !== null) {
             currTab = window.localStorage.getItem('currTab');
         }
-
         var storedGraph = null;
         this.props.diagramTypes.map((type, i) => {
             storedGraph = window.localStorage.getItem(this.paperId + "graph_" + type);
@@ -130,6 +129,7 @@ class Editor extends React.Component {
             }
         });
         //window.localStorage.removeItem(this.paperId + "graph_" + currTab); // use if graph contains critical bug.
+        this.props.setCurrGraph(currTab, this.graph.toJSON()); //TODO
         return window.localStorage.getItem(this.paperId + "graph_" + currTab);
     }
 
@@ -182,8 +182,6 @@ class Editor extends React.Component {
             interactive: {vertexAdd: false},
         });
 
-
-        console.log(`INITIAL PAPER`, this.paper)
         // Load graph from localStorage if it exists,  upgrade efficiency
         if (this.getFromLocalStorage()) {
             this.graph.fromJSON(JSON.parse(this.getFromLocalStorage()));
@@ -223,17 +221,10 @@ class Editor extends React.Component {
             this.paper.on('blank:pointerup', this.endMovePaper);
             this.paper.on('element:sizeSelector:pointerdown', this.beginElementResize);
         }
-
-        let currGraph = 'asset'; //TODO
-        if (!window.localStorage.getItem('currTab')) {
-            currGraph = window.localStorage.getItem('currTab');
-        }
-        console.log(`Current graph `, currGraph);
-        //console.log(window.localStorage);
-        this.props.setCurrGraph(currGraph, this.graph.toJSON()); //TODO
     }
 
     //TODO, understand this better.
+    //This function attaches the toolView containing linkTools to the link provided.
     attachTools(link) {
         //Create tools for link
         var linkView = link.findView(this.paper);
@@ -900,6 +891,7 @@ class Editor extends React.Component {
         let {tx, ty} = this.props.graphs[label].position;
         this.paper.scale(sx, sy);
         this.paper.translate(tx, ty);
+        this.initGraph();
     }
 
     render() {
