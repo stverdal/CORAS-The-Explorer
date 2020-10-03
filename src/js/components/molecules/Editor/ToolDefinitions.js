@@ -52,114 +52,6 @@ export default [
         shapeFn: () => new joint.shapes.coras.unboxedElement(),
         width: 40,
         height: 80,
-        iconHeight: assetHeight,
-        icon: assetSymbol,
-        text: "Asset",
-        id: "direct_asset",
-        corasType: 0,
-        perspectives: {
-            0: { "icon/href": assetSymbol, "icon/height": assetHeight },
-            1: { "icon/href": assetSymbolOutlined, "icon/height": assetHeight },
-            2: { "icon/href": assetSymbolShaded, "icon/height": assetHeight }
-        },
-        //
-        existsIn: {
-            threat: true,
-            asset: true,
-            risk: true,
-            treatment: true,
-            treatment_overview: true
-        },
-        role: "direct_asset"
-    },
-    {
-        shapeFn: () => new joint.shapes.coras.unboxedElement(),
-        width: 40,
-        height: 80,
-        iconHeight: indirectHeight,
-        icon: indirectAssetSymbol,
-        text: "Indirect\nAsset",
-        id: "indirect_asset",
-        corasType: 0,
-        perspectives: {
-            0: { "icon/href": indirectAssetSymbol, "icon/height": indirectHeight },
-            1: { "icon/href": indirectAssetSymbolOutlined, "icon/height": indirectHeight },
-            2: { "icon/href": indirectAssetSymbolShaded, "icon/height": indirectHeight }
-        },
-        existsIn: {
-            asset: true,
-            risk: true,
-            treatment: true,
-            treatment_overview: true
-        },
-        role: "indirect_asset"
-    },
-    {
-        shapeFn: () => new joint.shapes.coras.ellipseElement(),
-        width: 190,
-        height: 80,
-        iconHeight: riskHeight,
-        icon: riskSymbol,
-        text: "Threat Scenario",
-        id: "threat_scenario",
-        corasType: 0,
-        perspectives: {
-            0: { "icon/href": riskSymbol, "icon/height": riskHeight },
-            1: { "icon/href": riskSymbolOutlined, "icon/height": riskHeight },
-            2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
-        },
-        existsIn: {
-            threat: true,
-            treatment: true
-        },
-        valueType: "Likelihood",
-        role: "threat_scenario",
-    },
-    {
-        shapeFn: () => new joint.shapes.coras.riskElement(),
-        width: 190,
-        height: 80,
-        iconHeight: riskHeight,
-        icon: riskSymbol,
-        text: "Risk",
-        id: "risk",
-        corasType: 0,
-        perspectives: {
-            0: { "icon/href": riskSymbol, "icon/height": riskHeight },
-            1: { "icon/href": riskSymbolOutlined, "icon/height": riskHeight },
-            2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
-        },
-        existsIn: {
-            risk: true,
-            treatment: true,
-            treatment_overview: true
-        },
-        valueType: "Likelihood", //?
-        role: "risk",
-    },
-    {
-        shapeFn: () => new joint.shapes.coras.unboxedElement(),
-        width: 40,
-        height: 80,
-        iconHeight: stakeholderHeight,
-        icon: stakeholderSymbol,
-        text: "Stakeholder",
-        id: "stakeholder",
-        corasType: 0,
-        perspectives: {
-            0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
-            1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
-            2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
-        },
-        existsIn: {
-            //asset: true
-        },
-        role: "risk"
-    },
-    {
-        shapeFn: () => new joint.shapes.coras.unboxedElement(),
-        width: 40,
-        height: 80,
         iconHeight: accidentalHeight,
         icon: threatHumanAccidentalSymbol,
         text: "Human Threat\nAccidental",
@@ -226,23 +118,22 @@ export default [
         shapeFn: () => new joint.shapes.coras.ellipseElement(),
         width: 190,
         height: 80,
-        iconHeight: treatmentHeight,
-        icon: treatmentSymbol,
-        text: "Treatment",
-        id: "treatment",
+        iconHeight: riskHeight,
+        icon: riskSymbol,
+        text: "Threat Scenario",
+        id: "threat_scenario",
         corasType: 0,
         perspectives: {
-            0: { "icon/href": treatmentSymbol, "body/strokeDasharray": "", "icon/height": treatmentHeight },
-            1: { "icon/href": treatmentSymbolOutlined, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight },
-            2: { "icon/href": treatmentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight }
+            0: { "icon/href": riskSymbol, "icon/height": riskHeight },
+            1: { "icon/href": riskSymbolOutlined, "icon/height": riskHeight },
+            2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
         },
         existsIn: {
-            //threat: true,
-            //risk: true,
-            treatment: true,
-            treatment_overview: true
+            threat: true,
+            treatment: true
         },
-        role: "treatment"
+        valueType: "Likelihood",
+        role: "threat_scenario",
     },
     {
         shapeFn: () => new joint.shapes.coras.rectElement(),
@@ -263,6 +154,47 @@ export default [
         },
         valueType: "Likelihood",
         role: "unwanted_incident"
+    },
+    {
+        shapeFn: () => new joint.shapes.coras.riskElement(),
+        width: 190,
+        height: 80,
+        iconHeight: riskHeight,
+        icon: riskSymbol,
+        text: "Risk",
+        id: "risk",
+        corasType: 0,
+        perspectives: {
+            0: { "icon/href": riskSymbol, "icon/height": riskHeight },
+            1: { "icon/href": riskSymbolOutlined, "icon/height": riskHeight },
+            2: { "icon/href": riskSymbolShaded, "icon/height": riskHeight }
+        },
+        existsIn: {
+            risk: true,
+            treatment: true,
+            treatment_overview: true
+        },
+        valueType: "Likelihood", //?
+        role: "risk",
+    },
+    {
+        shapeFn: () => new joint.shapes.coras.unboxedElement(),
+        width: 40,
+        height: 80,
+        iconHeight: stakeholderHeight,
+        icon: stakeholderSymbol,
+        text: "Stakeholder",
+        id: "stakeholder",
+        corasType: 0,
+        perspectives: {
+            0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
+            1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
+            2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
+        },
+        existsIn: {
+            //asset: true
+        },
+        role: "risk"
     },
     {
         shapeFn: () => new joint.shapes.coras.rectElement(),
@@ -287,6 +219,72 @@ export default [
         fill: "#668FBA"
     },
     {
+        shapeFn: () => new joint.shapes.coras.roundRectElement(),
+        width: 300,
+        height: 300,
+        corasType: 0,
+        //sizeSelector: unwantedIncidentSymbol,
+        iconHeight: stakeholderHeight,
+        icon: stakeholderSymbol,
+        text: "Stakeholder",
+        id: "stakeholder",
+        perspectives: {
+            0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
+            1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
+            2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
+        },
+        existsIn: {
+            asset: true
+        },
+        role: "stakeholder"
+    },
+    {
+        shapeFn: () => new joint.shapes.coras.unboxedElement(),
+        width: 40,
+        height: 80,
+        iconHeight: assetHeight,
+        icon: assetSymbol,
+        text: "Asset",
+        id: "direct_asset",
+        corasType: 0,
+        perspectives: {
+            0: { "icon/href": assetSymbol, "icon/height": assetHeight },
+            1: { "icon/href": assetSymbolOutlined, "icon/height": assetHeight },
+            2: { "icon/href": assetSymbolShaded, "icon/height": assetHeight }
+        },
+        //
+        existsIn: {
+            threat: true,
+            asset: true,
+            risk: true,
+            treatment: true,
+            treatment_overview: true
+        },
+        role: "direct_asset"
+    },
+    {
+        shapeFn: () => new joint.shapes.coras.unboxedElement(),
+        width: 40,
+        height: 80,
+        iconHeight: indirectHeight,
+        icon: indirectAssetSymbol,
+        text: "Indirect\nAsset",
+        id: "indirect_asset",
+        corasType: 0,
+        perspectives: {
+            0: { "icon/href": indirectAssetSymbol, "icon/height": indirectHeight },
+            1: { "icon/href": indirectAssetSymbolOutlined, "icon/height": indirectHeight },
+            2: { "icon/href": indirectAssetSymbolShaded, "icon/height": indirectHeight }
+        },
+        existsIn: {
+            asset: true,
+            risk: true,
+            treatment: true,
+            treatment_overview: true
+        },
+        role: "indirect_asset"
+    },
+    {
         shapeFn: () => new joint.shapes.coras.unboxedElement(),
         width: 40,
         height: 80,
@@ -308,23 +306,25 @@ export default [
         magnet: 'passive'
     },
     {
-        shapeFn: () => new joint.shapes.coras.roundRectElement(),
-        width: 300,
-        height: 300,
+        shapeFn: () => new joint.shapes.coras.ellipseElement(),
+        width: 190,
+        height: 80,
+        iconHeight: treatmentHeight,
+        icon: treatmentSymbol,
+        text: "Treatment",
+        id: "treatment",
         corasType: 0,
-        //sizeSelector: unwantedIncidentSymbol,
-        iconHeight: stakeholderHeight,
-        icon: stakeholderSymbol,
-        text: "Stakeholder",
-        id: "stakeholder",
         perspectives: {
-            0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
-            1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
-            2: { "icon/href": stakeholderSymbolShaded, "icon/height": stakeholderHeight }
+            0: { "icon/href": treatmentSymbol, "body/strokeDasharray": "", "icon/height": treatmentHeight },
+            1: { "icon/href": treatmentSymbolOutlined, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight },
+            2: { "icon/href": treatmentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight }
         },
         existsIn: {
-            asset: true
+            //threat: true,
+            //risk: true,
+            treatment: true,
+            treatment_overview: true
         },
-        role: "stakeholder"
+        role: "treatment"
     },
 ]

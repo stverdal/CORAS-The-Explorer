@@ -104,6 +104,7 @@ class Editor extends React.Component {
 
     saveToLocalStorage() {
         // might want to update redux state here, or update store more frequently
+        console.log(this.props.currGraph.label)
         window.localStorage.setItem(this.paperId + "graph_" + this.props.currGraph.label, JSON.stringify(this.graph.toJSON()));
         //console.log(this.props.currGraph.label);
         window.localStorage.setItem('currTab', this.props.currGraph.label);
@@ -129,7 +130,6 @@ class Editor extends React.Component {
             }
         });
         //window.localStorage.removeItem(this.paperId + "graph_" + currTab); // use if graph contains critical bug.
-        console.log(`ONLOAD RETURN: `, window.localStorage.getItem(this.paperId + "graph_" + currTab));
         return window.localStorage.getItem(this.paperId + "graph_" + currTab);
     }
 
@@ -315,16 +315,7 @@ class Editor extends React.Component {
             stroke: 'black',
             fill: fill,
             strokeWidth: 10
-
         });
-        /*link.attr({
-            line: {
-                targetMarker: {
-                    'type': 'Path',
-                    'd': arrowheadShape
-                }
-            }
-        }); */
         return link;
     }
 
@@ -397,6 +388,7 @@ class Editor extends React.Component {
             }
             var result = 'no_relation';
             var valType = 'NA';
+            var reversed =  false;
 
             switch (source) {
                 case "threat_source":
@@ -411,27 +403,56 @@ class Editor extends React.Component {
                     }
                     break;
                 case "threat_scenario":
-                    if (target === "threat_scenario" || target === "unwanted_incident" || target === "risk") {
-                        result = "leads_to";
-                        valType = "Conditional probability"
-                    } else { cell.remove() }
+                    switch (target) {
+                        case "threat_scenario":
+                        case "unwanted_incident":
+                        case "risk":
+                            result = "leads_to";
+                            valType = "Conditional probability";
+                            break;
+                        case "threat_source":
+                            result = "initiates";
+                            reversed = true;
+                            break;
+                        default:
+                            cell.remove();
+                            break;
+                    }
                     break;
                 case "unwanted_incident":
-                    if (target === "threat_scenario" || target === "unwanted_incident") {
-                        result = "leads_to";
-                        valType = "Conditional probability"
-                    } else if (target === "direct_asset") {
-                        result = "impacts";
-                    } else { 
-                        cell.remove() 
+                    switch (target) {
+                        case "threat_scenario":
+                        case "unwanted_incident":
+                            result = "leads_to";
+                            valType = "Conditional probability";
+                            break;
+                        case "direct_asset":
+                            result = "impacts";
+                            break;
+                        case "threat_source":
+                            result = "initiates";
+                            reversed = true;
+                            break;
+                        default:
+                            cell.remove();
+                            break;
                     }
                     break;
                 case "direct_asset":
-                case "indirect_asset":
+                    if (target === 'unwanted_incident') {
+                        result = "impacts";
+                        reversed = true;
+                    } else if (target === "direct_asset" || target === "indirect_asset") {
+                        result = "impacts";
+                    } else {
+                        cell.remove();
+                    }
+                    break;
+                case "indirect_asset": 
                     if (target === "direct_asset" || target === "indirect_asset") {
                         result = "impacts";
                     } else { 
-                        cell.remove() 
+                        cell.remove();
                     }
                     break;
                 case "treatment":
@@ -473,6 +494,12 @@ class Editor extends React.Component {
                     cell.remove();
             }
 
+            //switch target and source
+            if (reversed) {
+                let temp = cell.source();
+                cell.source(cell.target());
+                cell.target(temp);
+            }
             
             if (result !== "no_relation" && !cell.label(0)) {
                 this.visualizeRelation(cell, result);
@@ -774,8 +801,6 @@ class Editor extends React.Component {
         //console.log(cellView);
         this.embedElement(cellView);
     }
-
-
 
     saveGraphToFile(e) {
         e.preventDefault();

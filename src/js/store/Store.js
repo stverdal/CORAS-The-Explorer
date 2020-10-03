@@ -146,6 +146,7 @@ function Editor(state, action) {
         case ActionTypes.EDITOR.ELEMENT_RIGHT_CLICKED:
             if (!state.previousElementRightClicked) return Object.assign({}, state, { previousElementRightClicked: action.payload.element });
             else {
+                console.log("LINKLINKLINK");
                 const link = new joint.shapes.coras.link();
                 link.set('corasType', 0);
                 link.source(state.previousElementRightClicked);
