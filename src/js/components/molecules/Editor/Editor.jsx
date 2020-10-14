@@ -282,7 +282,7 @@ class Editor extends React.Component {
 
         switch (relation) {
             case 'initiates':
-                arrowheadShape = 'M 15 -6 L -2 0 L 15 6';
+                arrowheadShape = 'M 10 -5 L -2 0 L 10 5';
                 fill = 'none';
                 strokeWidth = 6;
                 //TODO
@@ -419,6 +419,7 @@ class Editor extends React.Component {
                             break;
                         case "direct_asset":
                             result = "impacts";
+                            valType = "Consequence";
                             break;
                         case "threat_source":
                             result = "initiates";
@@ -430,20 +431,38 @@ class Editor extends React.Component {
                     }
                     break;
                 case "direct_asset":
-                    if (target === 'unwanted_incident') {
-                        result = "impacts";
-                        reversed = true;
-                    } else if (target === "direct_asset" || target === "indirect_asset") {
-                        result = "impacts";
-                    } else {
-                        cell.remove();
+                    switch (target) {
+                        case 'unwanted_incident':
+                        case 'risk':    
+                            result = "impacts";
+                            valType = "Consequence";
+                            reversed = true;
+                            break;
+                        case "direct_asset":
+                        case "indirect_asset":
+                            result = "impacts";
+                            valType = "Consequence";
+                            break;
+                        default:
+                            cell.remove();
+                       
                     }
                     break;
                 case "indirect_asset": 
-                    if (target === "direct_asset" || target === "indirect_asset") {
-                        result = "impacts";
-                    } else { 
-                        cell.remove();
+                    switch (target) {
+                        case 'risk':    
+                            result = "impacts";
+                            valType = "Consequence";
+                            reversed = true;
+                            break;
+                        case "direct_asset":
+                        case "indirect_asset":
+                            result = "impacts";
+                            valType = "Consequence";
+                            break;
+                        default:
+                            cell.remove();
+                       
                     }
                     break;
                 case "treatment":

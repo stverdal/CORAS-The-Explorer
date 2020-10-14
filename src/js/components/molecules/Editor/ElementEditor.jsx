@@ -100,7 +100,6 @@ class ElementEditor extends React.Component {
     
     //TODO
     valueType(e) {
-        //console.log(this.props.element);
         let val = "Value";
 
         if (this.props.isLink) {

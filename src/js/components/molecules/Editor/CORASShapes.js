@@ -50,9 +50,9 @@ function AddCorasShapes(joint) {
             innerBody: {
                 refCx: "50%",
                 refCy: "50%",
-                refRx: "45%",
-                refRy: "45%",
-                fill: "#FFF",
+                refRx: "40%",
+                refRy: "40%",
+                fill: "#FFF"
             },
             text: {
                 refX: "50%",
@@ -109,10 +109,10 @@ function AddCorasShapes(joint) {
                 magnet: true
             },
             innerBody: {
-                refX: "5%",
-                refY: "5%",
-                refWidth: "90%",
-                refHeight: "90%",
+                refX: "15%",
+                refY: "15%",
+                refWidth: "70%",
+                refHeight: "70%",
                 fill: "#FFF"
             },
             icon: {
@@ -170,10 +170,10 @@ function AddCorasShapes(joint) {
                 magnet: true
             },
             innerBody: {
-                refX: "5%",
-                refY: "5%",
-                refWidth: "90%",
-                refHeight: "90%",
+                refX: "15%",
+                refY: "15%",
+                refWidth: "70%",
+                refHeight: "70%",
                 fill: "#FFF"
             },
             icon: {
@@ -186,7 +186,8 @@ function AddCorasShapes(joint) {
                 refX: "50%",
                 refY: "40%",
                 textVerticalAnchor: "middle",
-                textAnchor: "middle"
+                textAnchor: "middle",
+                overflow: "hidden"
             },
             value: {
                 refX: "50%",
