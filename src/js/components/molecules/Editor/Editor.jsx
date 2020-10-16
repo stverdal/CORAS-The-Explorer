@@ -483,6 +483,7 @@ class Editor extends React.Component {
                         case "direct_asset":
                         case "indirect_asset":
                             result = "impacts";
+                            valType = "Consequence";
                             break;
                         default:
                             cell.remove();
