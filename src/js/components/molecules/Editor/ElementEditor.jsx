@@ -124,32 +124,6 @@ class ElementEditor extends React.Component {
         return this.props.element.attributes.valueType; //null is falsy, any other valuetype should be true.
     }
 
-
-    /*
-                {!this.props.isLink ? <div className="element-editor-section">
-                    <label className="element-editor-section__label element-editor-section__label--full">Position</label>
-                    <div className="element-editor-section__partitioner">
-                        <input id="x" className="element-editor-section__input element-editor-section__input--75" type="number" value={this.state.x} onChange={this.onPositionChangeX} />
-                        <label htmlFor="x" className="element-editor-section__label">x</label>
-                    </div>
-                    <div className="element-editor-section__partitioner">
-                        <input id="y" className="element-editor-section__input element-editor-section__input--75" type="number" value={this.state.y} onChange={this.onPositionChangeY} />
-                        <label htmlFor="y" className="element-editor-section__label">y</label>
-                    </div>
-                </div> : null}
-
-
-
-                {!this.props.isLink ? <div className="element-editor-section">
-                    <label className="element-editor-section__label element-editor-section__label--full">Font size</label>
-                    <div className="element-editor-section__partitioner">
-                        <input id="fontsize" className="element-editor-section__input element-editor-section__input--75" type="number" value={this.state.fontSize} onChange={this.onFontSizeChange} />
-                        <label htmlFor="fontsize" className="element-editor-section__label">Font size</label>
-                    </div>
-                </div>: null}
-    */
-
-
     render() {
         return (
             <form className="element-editor" style={{ left: this.props.editorPosition.left, top: this.props.editorPosition.top }}>

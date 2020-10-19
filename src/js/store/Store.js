@@ -314,7 +314,6 @@ function Editor(state, action) {
                 newState.elementEditor.data.element.set('perspective', perspective);
             } else {
                 const styles = newState.elementEditor.data.element.get('perspectives');
-                console.log(`STYLES `,styles)
                 Object.keys(styles[perspective]).map((item) => newState.elementEditor.data.element.attr(item, styles[perspective][item]));
                 newState.elementEditor.data.perspective = perspective;
                 newState.elementEditor.data.element.set('perspective', perspective);
