@@ -26,9 +26,7 @@ const keyPointData= [
 const Frontpage = (props) =>
     <div>
         <Preview imageUrl={ed} tagLine={"CORAS - A risk modeling approach"}/>
-        <FrontPageActions
-            leftLink={{ path: '/quick-start', text: "Quick start" }}
-            rightLink={{ path: '/try-it', text: "Try CORAS" }} />
+        <FrontPageActions />
         <KeyPoints keyPoints={keyPointData} />
     </div>;
 

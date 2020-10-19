@@ -1,17 +1,28 @@
 import React from 'react';
+import { HashRouter, Route, Link } from 'react-router-dom'; 
 
 import './frontpageactions.css';
 
 import Button from '../../atoms/Button/Button.jsx';
 
-const FrontPageActions = ({ leftLink, rightLink }) =>
-    <nav className="fp-actions">
-        <div className="fp-left">
-            <Button link={leftLink.path} text={leftLink.text} type="cta" minWidth="11rem" />
-        </div>
-        <div className="fp-right">
-            <Button link={rightLink.path} text={rightLink.text} type="cta" minWidth="11rem" />
-        </div>
-    </nav>;
+
+//<Button link={leftLink.path} text={leftLink.text} type="cta" minWidth="11rem" />
+//<Button link={rightLink.path} text={rightLink.text} type="cta" minWidth="11rem" />
+//<Route path={'/try-it'} component={EditorPage} />
+
+const FrontPageActions = () =>
+
+        <nav className="fp-actions">
+            <div className="fp-left">
+                <Link to='/quick-start'>
+                    <Button text="Quick start" type="cta" minWidth="11rem" />
+                </Link>
+            </div>
+            <div className="fp-right">
+                <Link to='/try-it'>
+                    <Button text="Try CORAS" type="cta" minWidth="11rem" />
+                </Link>
+            </div>
+        </nav>;
 
 export default FrontPageActions;

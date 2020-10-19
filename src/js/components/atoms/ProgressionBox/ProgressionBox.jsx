@@ -1,20 +1,23 @@
 import React from 'react';
+import { HashRouter, Link } from 'react-router-dom';
 
 import './progressionbox.css';
 
 const ProgressionBox = ({ stepid, steps, rootPath }) =>
-    <ul className="progression-box">
-        {steps.map((step, index) =>
-            <a key={index} href={`/${rootPath}/${index}`} title={step.title}>
-                <ProgressionStep 
-                    {...step} 
-                    index={index}
-                    open={index === stepid}
-                    bgColor="#7898ac"
-                    altColor1={index === stepid ? "#FFF" : null}
-                    altColor2={index === stepid-1 ? "#FFF" : null}/>
-                </a>)}
-    </ul>;
+        <ul className="progression-box">
+            {steps.map((step, index) =>
+                <div key={index} title={step.title}>
+                    <Link to={`/${rootPath}/${index}`}>
+                        <ProgressionStep 
+                            {...step} 
+                            index={index}
+                            open={index === stepid}
+                            bgColor="#7898ac"
+                            altColor1={index === stepid ? "#FFF" : null}
+                            altColor2={index === stepid-1 ? "#FFF" : null}/>
+                    </Link>
+                </div>)}
+        </ul>
 
 const ProgressionStep = ({ index, shortTitle, open, bgColor, altColor1, altColor2 }) =>
     <li className="progression-box-item">

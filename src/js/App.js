@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { HashRouter as Router, Route, Switch} from 'react-router-dom';
 
 import Header from './components/molecules/Header/Header';
 import Footer from './components/molecules/Footer/Footer';
@@ -11,7 +11,7 @@ import EditorPage from './components/pages/EditorPage';
 import QuickStart from './components/pages/QuickStart';
 
 const App = (props) =>
-    <Router>
+    <Router basename='/'>
         <div>
             <Header location={window.location.pathname} />
             <div className="page-content-wrapper">

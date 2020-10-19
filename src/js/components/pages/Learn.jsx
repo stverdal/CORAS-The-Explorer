@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch, Link } from 'react-router-dom';
 
 import PageHeading from '../atoms/PageHeading/PageHeading';
 import LegacyIntro from './Learn/LegacyIntro';
@@ -81,12 +81,6 @@ const Introduction = ({ match, location, history }) =>
 				yourself? Great! Read on to learn how to use CORAS to achieve that. The following tutorials
 				and documents are split into three sections:
 			</p>
-			<Heading level={1} text={"TestHeader"} />
-			<Heading level={2} text={"TestHeader"} />
-			<Heading level={3} text={"TestHeader"} />
-			<Heading level={4} text={"TestHeader"} />
-			<Heading level={5} text={"TestHeader"} />
-			<Heading level={6} text={"TestHeader"} />
 		</TextBlock>
 		
 	</div>;
@@ -96,7 +90,14 @@ const NavigationBlock = ({ title, text, links }) =>
 		<h1 className="navigation-block__heading">{title}</h1>
 		{text}
 		<ul className="navigation-block__navbar">
-			{links.map((link, index) => <li key={index} className="navigation-block__navbar-item"><Button {...link} /></li>)}
+			{links.map((link, index) => 
+					<li key={index} className="navigation-block__navbar-item">
+						<Link to={link.link}>
+							<Button {...link}/>
+						</Link>
+					</li>
+
+			)}
 		</ul>
 	</div>;
 

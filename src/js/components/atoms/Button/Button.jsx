@@ -11,6 +11,6 @@ function getTypeClass(type) {
 }
 
 const Button = ({ link, text, type, minWidth }) =>
-    <a className={"button" + getTypeClass(type)} href={link} style={ minWidth ? { minWidth } : null}>{text}</a>;
+    <div className={"button" + getTypeClass(type)} style={ minWidth ? { minWidth } : null}>{text}</div>;
 
 export default Button;
