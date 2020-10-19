@@ -56,7 +56,6 @@ export default [
         icon: threatHumanAccidentalSymbol,
         text: "Human Threat\nAccidental",
         id: "human_threat_non_malicious",
-        corasType: 0,
         perspectives: {
             0: { "icon/href": threatHumanAccidentalSymbol, "icon/height": accidentalHeight },
             1: { "icon/href": threatHumanAccidentalSymbolOutline, "icon/height": accidentalHeight },
@@ -78,7 +77,6 @@ export default [
         icon: threatHumanDeliberateSymbol,
         text: "Human Threat\nDeliberate",
         id: "human_threat_malicious",
-        corasType: 0,
         perspectives: {
             0: { "icon/href": threatHumanDeliberateSymbol, "icon/height": deliberateHeight },
             1: { "icon/href": threatHumanDeliberateSymbolOutlined, "icon/height": deliberateHeight },
@@ -100,7 +98,6 @@ export default [
         icon: threatNonHumanSymbol,
         text: "Non-Human\nThreat",
         id: "threat_non_human",
-        corasType: 0,
         perspectives: {
             0: { "icon/href": threatNonHumanSymbol, "icon/height": nonHumanHeight },
             1: { "icon/href": threatNonHumanSymbolOutlined, "icon/height": nonHumanHeight },
@@ -122,7 +119,6 @@ export default [
         icon: riskSymbol,
         text: "Threat Scenario",
         id: "threat_scenario",
-        corasType: 0,
         perspectives: {
             0: { "icon/href": riskSymbol, "icon/height": riskHeight },
             1: { "icon/href": riskSymbolOutlined, "icon/height": riskHeight },
@@ -143,7 +139,6 @@ export default [
         icon: unwantedIncidentSymbol,
         text: "Incident",
         id: "unwanted_incident",
-        corasType: 0,
         perspectives: {
             0: { "icon/href": unwantedIncidentSymbol, "body/strokeDasharray": "", "icon/height": incidentHeight },
             1: { "icon/href": unwantedIncidentSymbolOutlined, "body/strokeDasharray": "8, 4", "icon/height": incidentHeight },
@@ -163,7 +158,6 @@ export default [
         icon: riskSymbol,
         text: "Risk",
         id: "risk",
-        corasType: 0,
         perspectives: {
             0: { "icon/href": riskSymbol, "icon/height": riskHeight },
             1: { "icon/href": riskSymbolOutlined, "icon/height": riskHeight },
@@ -185,7 +179,6 @@ export default [
         icon: stakeholderSymbol,
         text: "Stakeholder",
         id: "stakeholder",
-        corasType: 0,
         perspectives: {
             0: { "icon/href": stakeholderSymbol, "icon/height": stakeholderHeight },
             1: { "icon/href": stakeholderSymbolOutlined, "icon/height": stakeholderHeight },
@@ -205,7 +198,6 @@ export default [
         icon: expand,
         text: "Indicator",
         id: "indicator",
-        corasType: 0,
         perspectives: {
             0: { "icon/href": expand, "body/strokeDasharray": "", "icon/height": indicatorHeight },
             1: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight },
@@ -222,7 +214,7 @@ export default [
         shapeFn: () => new joint.shapes.coras.roundRectElement(),
         width: 300,
         height: 300,
-        corasType: 0,
+
         //sizeSelector: unwantedIncidentSymbol,
         iconHeight: stakeholderHeight,
         icon: stakeholderSymbol,
@@ -246,7 +238,6 @@ export default [
         icon: assetSymbol,
         text: "Asset",
         id: "direct_asset",
-        corasType: 0,
         perspectives: {
             0: { "icon/href": assetSymbol, "icon/height": assetHeight },
             1: { "icon/href": assetSymbolOutlined, "icon/height": assetHeight },
@@ -270,7 +261,7 @@ export default [
         icon: indirectAssetSymbol,
         text: "Indirect\nAsset",
         id: "indirect_asset",
-        corasType: 0,
+
         perspectives: {
             0: { "icon/href": indirectAssetSymbol, "icon/height": indirectHeight },
             1: { "icon/href": indirectAssetSymbolOutlined, "icon/height": indirectHeight },
@@ -292,7 +283,6 @@ export default [
         icon: vulnerabilitySymbol,
         text: "Vulnerability",
         id: "vulnerability",
-        corasType: 0,
         perspectives: {
             0: { "icon/href": vulnerabilitySymbol, "icon/height": vulnerabilityHeight },
             1: { "icon/href": vulnerabilitySymbolOutlined, "icon/height": vulnerabilityHeight },
@@ -313,7 +303,6 @@ export default [
         icon: treatmentSymbol,
         text: "Treatment",
         id: "treatment",
-        corasType: 0,
         perspectives: {
             0: { "icon/href": treatmentSymbol, "body/strokeDasharray": "", "icon/height": treatmentHeight },
             1: { "icon/href": treatmentSymbolOutlined, "body/strokeDasharray": "8, 4", "icon/height": treatmentHeight },

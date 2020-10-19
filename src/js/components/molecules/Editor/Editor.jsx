@@ -818,7 +818,8 @@ class Editor extends React.Component {
         const a = document.createElement('a');
         const graphContent = new Blob([JSON.stringify(this.graph.toJSON(), null, 2)], { type: 'text/plain' });
         a.href = URL.createObjectURL(graphContent);
-        a.download = "CORASDiagram.json";
+        //a.download = "CORASDiagram.json";
+        a.download = "CORASDiagram_" + this.props.currGraph.label + ".json";
         a.click();
         a.remove();
     }

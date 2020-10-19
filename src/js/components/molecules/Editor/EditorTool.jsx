@@ -33,7 +33,7 @@ const EditorToolBar = ({ beginMoveElement, svgs, toggleInfoBox, currentPerspecti
                         if(svg.attrs)
                             Object.keys(svg.attrs).map((key, index) => shape.attr(key, svg.attrs[key]));
 
-                        const styles = svg.perspectives[currentPerspective]; //TODO
+                        const styles = svg.perspectives[currentPerspective]; 
                         console.log(`STYLES `, styles)
                         Object.keys(styles).forEach((ref) => shape.attr(ref, styles[ref]));
                         shape.attr("text/text", svg.text);
