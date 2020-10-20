@@ -10,13 +10,13 @@ import Button from '../../atoms/Button/Button.jsx';
 //<Button link={rightLink.path} text={rightLink.text} type="cta" minWidth="11rem" />
 //<Route path={'/try-it'} component={EditorPage} />
 
-const FrontPageActions = () =>
+//<Link to='/quick-start'>
+//<Button text="Quick start" type="cta" minWidth="11rem" />
+//</Link>
 
+const FrontPageActions = () =>
         <nav className="fp-actions">
             <div className="fp-left">
-                <Link to='/quick-start'>
-                    <Button text="Quick start" type="cta" minWidth="11rem" />
-                </Link>
             </div>
             <div className="fp-right">
                 <Link to='/try-it'>

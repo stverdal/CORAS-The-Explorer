@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; 
+import { HashRouter, Link } from 'react-router-dom'; 
 
 import './keypoints.css';
 

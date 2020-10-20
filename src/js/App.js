@@ -11,7 +11,7 @@ import EditorPage from './components/pages/EditorPage';
 import QuickStart from './components/pages/QuickStart';
 
 const App = (props) =>
-    <Router basename='/'>
+    <Router>
         <div>
             <Header location={window.location.pathname} />
             <div className="page-content-wrapper">
