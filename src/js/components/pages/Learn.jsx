@@ -52,7 +52,7 @@ const Introduction = ({ match, location, history }) =>
 				CORAS is a method for conducting security risk analysis, Which means that CORAS can help you answer such questions. Neat!
 			</p>
 			<p>
-				CORAS is the name of a risk analysis method, a modelling language, and a set of tools. Together we call these <em>The CORAS Approach</em>.
+				CORAS is the name of a risk analysis method, a modeling language, and a set of tools. Together we call these <em>The CORAS Approach</em>.
 				Through reading the information and going through the tutorials on this page, you will become familiar with the different elements of the CORAS approach, and can use them
 				in your business or life as an aid to assess risks and threats, and mitigate them.
 			</p>
