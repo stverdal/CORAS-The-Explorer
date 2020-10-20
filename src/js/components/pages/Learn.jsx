@@ -61,7 +61,7 @@ const Introduction = ({ match, location, history }) =>
 			title="Risk assessment and modelling"
 			text={`Before you begin learning CORAS, you should have an understanding of the basic concepts
 			of risk analysis and modelling, such as what we mean by the term "risk".
-			If you feel confident you know enough, read on! Of not, check out the links
+			If you feel confident you know enough, read on! If not, check out the links
 			below to quickly get up to speed before proceeding here.`}
 			links={[
 				{
@@ -78,8 +78,7 @@ const Introduction = ({ match, location, history }) =>
 		<TextBlock>
 			<p>
 				So you know what risk assessment and risk modelling is, and now you want to try it out
-				yourself? Great! Read on to learn how to use CORAS to achieve that. The following tutorials
-				and documents are split into three sections:
+				yourself? Great! Read on to learn how to use CORAS to achieve that.
 			</p>
 		</TextBlock>
 		
