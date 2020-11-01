@@ -471,6 +471,8 @@ class Editor extends React.Component {
                         case "threat_source":
                         case "risk":
                         case "threat_scenario":
+                        case "direct_asset":
+                        case "indirect_asset":
                             result = "treats";
                             break;
                         default:
