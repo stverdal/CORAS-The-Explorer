@@ -145,7 +145,8 @@ export default [
             2: { "icon/href": unwantedIncidentSymbolShaded, "body/strokeDasharray": "8, 4", "icon/height": incidentHeight }
         },
         existsIn: {
-            threat: true
+            threat: true,
+            treatment: true
         },
         valueType: "Likelihood",
         role: "unwanted_incident"
