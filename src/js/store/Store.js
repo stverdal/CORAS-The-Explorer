@@ -58,6 +58,7 @@ function Editor(state, action) {
         },
         editorMenu: {
             showClearModal: false,
+            showClearModalElement: false, //misplaced
             clearPosition: {
                 top: "",
                 left: ""
@@ -122,12 +123,20 @@ function Editor(state, action) {
             "before_after",
             "after"
         ],
+        indicatorTypes: {
+            businessConfiguration: "#8EA7C4",
+            testResult: "#AFC499",
+            networkMonitoring: "#FFFFD2",
+            applicationMonitoring: "#E6A99A"
+
+        },
         cellResizing: false,
         elementPosition: {
             x: 0,
             y: 0
         },
-        movingLinks: []
+        movingLinks: [],
+        indicatorsToggled: false
     };
 
     const newState = Object.assign({}, state);
@@ -228,7 +237,7 @@ function Editor(state, action) {
 
         case ActionTypes.EDITOR.ELEMENT_DELETE:
             state.elementEditor.data.element.remove();
-            return Object.assign({}, state, { elementEditor: { visible: false } });
+            return Object.assign({}, state, { elementEditor: { visible: false }, editorMenu: {showClearModalElement: false} });
 
         case ActionTypes.EDITOR.ELEMENT_LABEL_EDIT:
             //if(newState.elementEditor.data.element.isLink()) newState.elementEditor.data.element.labels([{attrs: {text: {text: action.payload.label}}}]);
@@ -319,6 +328,23 @@ function Editor(state, action) {
                 newState.elementEditor.data.element.set('perspective', perspective);
             }
             return newState;
+        
+        case ActionTypes.EDITOR.ELEMENT_CHANGE_INDICATOR_TYPE:
+            let { indicatorType } =  action.payload;
+
+            console.log("INDICATOR TYPE", indicatorType);
+
+
+            //const styles = newState.elementEditor.data.element.get('perspectives');
+            //Object.keys(styles[perspective]).map((item) => newState.elementEditor.data.element.attr(item, styles[perspective][item]));
+            //newState.elementEditor.data.perspective = perspective; //NOT NEEDED?
+
+            newState.elementEditor.data.element.attr("body/fill", state.indicatorTypes[indicatorType]);
+            newState.elementEditor.data.element.attr("innerBody/fill", state.indicatorTypes[indicatorType]);
+
+            newState.elementEditor.data.element.set('indicatorType', indicatorType);
+            return newState;
+        
 
         case ActionTypes.EDITOR.TOOL_ELEMENT_CLICKED:
             newState.movement = action.payload;
@@ -341,12 +367,39 @@ function Editor(state, action) {
             return newState;
 
         case ActionTypes.EDITOR.MENU_CLEAR_CLICKED:
-            newState.editorMenu.showClearModal = !state.editorMenu.showClearModal;
-            newState.editorMenu.clearPosition = { top: `${action.payload.event.pageY}px`, left: `${action.payload.event.pageX}px`}
+            console.log('Clear clicked', action.payload.event)
+            console.log('Checking', action.payload.event.target.innerText)
+            //Not very scalable, both prompts removed if one closed.
+            if (action.payload.event.target.innerText === "Clear") {
+                console.log('Open clear')
+                newState.editorMenu.showClearModal = !state.editorMenu.showClearModal;
+                if (state.editorMenu.showClearModalElement === true) {
+                    newState.editorMenu.showClearModalElement = false
+                }
+                newState.editorMenu.clearPosition = { top: `${action.payload.event.pageY}px`, left: `${action.payload.event.pageX}px`}
+            } else if (action.payload.event.target.innerText === "Delete") {
+                console.log('Open delete')
+                newState.editorMenu.showClearModalElement = !state.editorMenu.showClearModalElement;
+                if (state.editorMenu.showClearModal === true) {
+                    newState.editorMenu.showClearModal = false
+                 }
+                newState.editorMenu.clearPosition = { top: `${action.payload.event.pageY}px`, left: `${action.payload.event.pageX}px`}
+            } else {
+                console.log('Closing prompts')
+                //Close the open prompts.
+                if (state.editorMenu.showClearModal === true) {
+                   newState.editorMenu.showClearModal = false
+                }
+                if (state.editorMenu.showClearModalElement === true) {
+                    newState.editorMenu.showClearModalElement = false
+                }
+            }
+            //newState.editorMenu.clearPosition = { top: `${action.payload.event.pageY}px`, left: `${action.payload.event.pageX}px`}
             return newState;
 
         case ActionTypes.EDITOR.MENU_CLEAR_CONFIRMED:
             newState.editorMenu.showClearModal = !state.editorMenu.showClearModal;
+            newState.elementEditor.visible = false;
             return newState;
 
         case ActionTypes.EDITOR.CELL_CLICKED:
@@ -436,7 +489,22 @@ function Editor(state, action) {
                 id: action.payload.id
             }
             return newState;
+        
+        case ActionTypes.EDITOR.SET_EDITOR_POSITION:
+            console.log(action.payload)
+            if (newState.elementEditor.data.editorPosition) {
+                newState.elementEditor.data.editorPosition = action.payload.pos;
+            }
+            return newState;
+        
+        case ActionTypes.EDITOR.SET_MODAL_POSITION:
+            console.log(action.payload.pos)
+            newState.editorMenu.clearPosition = action.payload.pos;
+            return newState;
 
+        case ActionTypes.EDITOR.TOGGLE_INDICATORS:
+            newState.indicatorsToggled = !state.indicatorsToggled;
+            return newState;
     }
 }
 

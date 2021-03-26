@@ -4,11 +4,7 @@ import { Link } from 'react-router-dom';
 import "./header.css";
 
 //<li className={"main-menu main-menu__item" + (window.location.pathname === '/quick-start' ? " main-menu__item--selected" : "")}><Link to={"/quick-start"}>Quick Start</Link></li>
-
-const Header = ({ location }) =>
-    <header className="main-header">
-        <div className="main-header-wrapper">
-            <div className="header-logo"><Link to='/'>CORAS</Link></div>
+/*
             <nav className="main-menu-container">
                 <ul className="main-menu">
                     <li className={"main-menu main-menu__item" + (window.location.pathname === '/learn' ? " main-menu__item--selected" : "")}><Link to={"/learn"}>Learn</Link></li>
@@ -16,6 +12,11 @@ const Header = ({ location }) =>
                     <li className={"main-menu main-menu__item" + (window.location.pathname === '/try-it' ? " main-menu__item--selected" : "")}><Link to={"/try-it"}>Try it</Link></li>
                 </ul>
             </nav>
+*/
+const Header = ({ location }) =>
+    <header className="main-header">
+        <div className="main-header-wrapper">
+            <div className="header-logo"><Link to='/'>CORAS</Link></div>
         </div>
     </header>;
 

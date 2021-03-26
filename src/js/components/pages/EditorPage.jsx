@@ -6,7 +6,6 @@ import Editor from '../molecules/Editor/Editor';
 
 const EditorPage = (props) =>
     <div>
-        <div className="introduction-page"><PageHeading title={"CORAS Editor"} /></div>
         <Editor />
     </div>;
 

@@ -1,5 +1,4 @@
 ﻿import React from 'react';
-import { useState } from 'react';
 import joint from 'jointjs';
 import { connect } from 'react-redux';
 import {
@@ -8,20 +7,15 @@ import {
     SetCurrGraph,
     ToggleInfoBox
 } from '../../../store/Actions';
-
-
 import "../../../../../node_modules/jointjs/dist/joint.css";
 import './editor.css';
 import './diagramselector.css';
-
 import AddCorasShapes from './CORASShapes.js';
 
 AddCorasShapes(joint);
 
 
-const DiagramSelector = ({ paper, graphs, currGraph, setGraph, changeGraph, selectedTab, diagramOptions, toggleInfoBox }) => {
-    
-    const [isShown, setIsShown] = useState(false);
+const DiagramSelector = ({ currGraph, changeGraph, selectedTab, diagramOptions, toggleInfoBox }) => {
 
     const switchDiagram = diagramLabel => {
         //check if diagram exists
@@ -60,11 +54,6 @@ const DiagramSelector = ({ paper, graphs, currGraph, setGraph, changeGraph, sele
                     <div
                         className={`diagram-tabrow__tab${currElem === selectedTab ? " diagram-tabrow__tab--selected" : ""}`}>{parseDName(currElem)}
                     </div>
-                    {isShown && (
-                    <div>
-                        {i}
-                    </div>
-                )}
                 </a>
             )}
         </div>

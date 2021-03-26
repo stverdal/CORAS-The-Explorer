@@ -16,6 +16,7 @@ import {
     ElementChangeWidth,
     ElementChangeSize,
     ElementChangePerspective,
+    ElementChangeIndicatorType,
     ToolElementRelease,
     MenuClearClicked,
     MenuClearConfirmed,
@@ -28,14 +29,13 @@ import {
     SetCellResizing,
     SetElementPosition,
     SetMovingLinks,
-    ToggleInfoBox
+    ToggleInfoBox, SetEditorPosition, SetModalPosition, ChangeInnerSize
 } from '../../../store/Actions';
-
-import Modal from '../../atoms/Modal/Modal';
 
 import ElementEditor from './ElementEditor';
 import EditorTool from './EditorTool';
 import DiagramSelector from './DiagramSelector';
+import EditorMenu from './EditorMenu';
 //import CellTool from './CellTool';
 
 import "../../../../../node_modules/jointjs/dist/joint.css";
@@ -100,6 +100,7 @@ class Editor extends React.Component {
         this.onHover = this.onHover.bind(this);
         this.exitHover = this.exitHover.bind(this);
         this.toggleInfo = this.toggleInfo.bind(this);
+        this.moveItem = this.moveItem.bind(this);
     }
 
     saveToLocalStorage() {
@@ -128,15 +129,23 @@ class Editor extends React.Component {
                 //this.props.setGraph(type, placeHolder, this.paper.scale(), this.paper.translate());
             }
         });
-        //window.localStorage.removeItem(this.paperId + "graph_" + currTab); // use if graph contains critical bug.
+        window.localStorage.removeItem(this.paperId + "graph_" + currTab); // use if graph contains critical bug.
         this.props.setCurrGraph(currTab, this.graph.toJSON()); //TODO
         return window.localStorage.getItem(this.paperId + "graph_" + currTab);
     }
 
     toggleInfo() {
+        //console.log('????'); //check for editor underneath cursor here. set flag if true.
         if (this.props.infoBox.visible) {
             this.props.toggleInfoBox({x:0,y:0}, false, "", "");
         }
+    }
+
+    //Should not be needed atm
+    moveItem(e) {
+        //console.log("HELLO");
+        //console.log(e);
+        //this.props.setEditorPosition({x:e.clientX,y:e.clientY})
     }
 
     componentDidMount() {
@@ -187,12 +196,12 @@ class Editor extends React.Component {
             this.graph.fromJSON(JSON.parse(this.getFromLocalStorage()));
             this.initGraph();
         }
-
         // Save in localStorage on change (or rather, every second currently)
         this.periodicalSave = setInterval(this.saveToLocalStorage, 1000);
 
         window.addEventListener('resize', this.updatePaperSize);
         window.addEventListener("mousedown", this.toggleInfo);
+        window.addEventListener("pointermove", this.moveItem);
 
         if (this.props.interactive === undefined ? true : this.props.interactive) {
             this.paper.on('cell:contextmenu', (elementView, e, x, y) => this.props.elementDoubleClicked(elementView.model, e));
@@ -205,7 +214,7 @@ class Editor extends React.Component {
             this.paper.on('element:mouseleave', this.exitHover);
 
             this.paper.on('link:mouseenter', function(linkView) {
-                console.log(`Showtools `,linkView.showTools())
+                //console.log(`Showtools `,linkView.showTools())
                 linkView.showTools();
             });
         
@@ -228,7 +237,7 @@ class Editor extends React.Component {
     attachTools(link) {
         //Create tools for link
         var linkView = link.findView(this.paper);
-        console.log(`AttachTools Linkview `, linkView);
+       // console.log(`AttachTools Linkview `, linkView);
 
         //combine tools in a view
         var verticesTool = new joint.linkTools.Vertices({
@@ -263,9 +272,9 @@ class Editor extends React.Component {
     }
 
     testEvent(cellView, e, x, y) {
-        console.log("Event triggered");
-        console.log(cellView);
-        console.log(e);
+        //console.log("Event triggered");
+        //console.log(cellView);
+        //console.log(e);
     }
 
     componentWillUnmount() {
@@ -275,7 +284,7 @@ class Editor extends React.Component {
     }
 
     visualizeRelation(link, relation) {
-        console.log('visualize ', relation)
+        //console.log('visualize ', relation)
         var arrowheadShape = 'M 10 -5 L -2 0 L 10 5 z';
         var fill = 'black';
         var strokeWidth = 10;
@@ -295,7 +304,6 @@ class Editor extends React.Component {
                 fill = 'none';
                 break;
             case 'treats': 
-                console.log(`treats`);
                 link.attr('line/strokeDasharray', '10 5');
                 arrowheadShape = "M 0 0 a 5 5 0 1 1 10 0 a 5 5 0 1 1 -10 0 ";
                 fill = 'white';
@@ -312,7 +320,7 @@ class Editor extends React.Component {
 
     handleScroll(cellView, e, x, y, delta) {
         e.preventDefault();
-        const scaleFactor = 1.1;
+        const scaleFactor = 1.03;
         const currentScale = this.paper.scale();
 
         if (delta > 0) {
@@ -332,13 +340,12 @@ class Editor extends React.Component {
 
     unembedElement(cellView, evt, x, y) {
         var cell = cellView.model;
-
         //if link return, no need to prepare for embedding
         if (cell.attributes.type === 'coras.defaultLink') {
             return;
         }
         
-        console.log('unembedElement')
+        //console.log('unembedElement')
 
         //if link exit
         this.setState({ elementPosition: cell.attributes.position });
@@ -372,6 +379,10 @@ class Editor extends React.Component {
     embedElement(cellView, evt, x, y) {
         var cell = cellView.model;
         if (cell.attributes.type === 'coras.defaultLink') {
+            if (cell.getTargetElement() === null ||cell.getSourceElement().cid === cell.getTargetElement().cid) {
+                cell.remove();
+                return;
+            }
             var source = cell.getSourceElement().attributes.role;
             var target;
             if (cell.getTargetElement()) {
@@ -388,6 +399,7 @@ class Editor extends React.Component {
                         case "unwanted_incident":
                         case "risk":
                             result = "initiates";
+                            valType = "Likelihood";
                             break;
                         default:
                             cell.remove();
@@ -403,6 +415,7 @@ class Editor extends React.Component {
                             break;
                         case "threat_source":
                             result = "initiates";
+                            valType = "Likelihood";
                             reversed = true;
                             break;
                         default:
@@ -423,6 +436,7 @@ class Editor extends React.Component {
                             break;
                         case "threat_source":
                             result = "initiates";
+                            valType = "Likelihood";
                             reversed = true;
                             break;
                         default:
@@ -485,6 +499,7 @@ class Editor extends React.Component {
                     switch (target) {
                         case "direct_asset":
                         case "indirect_asset":
+                        case "risk":
                             result = "impacts";
                             valType = "Consequence";
                             break;
@@ -514,11 +529,15 @@ class Editor extends React.Component {
                 cell.source(cell.target());
                 cell.target(temp);
             }
-            
-            if (result !== "no_relation" && !cell.label(0)) {
+
+            if (result !== "no_relation") {
                 this.visualizeRelation(cell, result);
                 this.attachTools(cell); //attach a toolview to the cell.
-                //change this to fit the overall goal. label vs attribute.
+                cell.attributes.relation = result;
+            }
+            
+            //Pad label array if necessary
+            if (!cell.label(0))  {
                 cell.label(0, {
                     attrs: {
                         text: {
@@ -529,8 +548,9 @@ class Editor extends React.Component {
                         offset: -10
                     }
                 });
-                cell.attributes.relation = result;
             }
+            //console.log("breakpoint")
+            //console.log("Valtype ", valType)
             if (valType != "NA" && !cell.label(1)) {
                 cell.label(1, {
                     attrs: {
@@ -555,13 +575,7 @@ class Editor extends React.Component {
                     }
                 });
             }
-            //console.log('Cell test');
-            //console.log(cell);
-            //console.log(cell.attributes.valueType); //undefined on some links...
-            //console.log("LABELS " + cell.labels());
             cell.attributes.relation = result;
-            //console.log(result);
-
             return;
         }
 
@@ -577,7 +591,7 @@ class Editor extends React.Component {
 
         var cellViewsBelow = this.paper.findViewsFromPoint(cell.getBBox().center());
 
-        console.log(cellViewsBelow);
+        //console.log(cellViewsBelow);
 
         if (cellViewsBelow.length) {
             var cellViewBelow = _.find(cellViewsBelow, function (c) { return c.model.id !== cell.id });
@@ -652,7 +666,7 @@ class Editor extends React.Component {
 
             // If no links or vertices return
             if (!this.state.movingLinks) {
-                console.log('test');
+                //console.log('test');
                 return;
             }
 
@@ -679,6 +693,7 @@ class Editor extends React.Component {
             }
             return;
         }
+        //resize cell
 
         var pos = cellView.model.attributes.position;
         var size = cellView.model.attributes.size;
@@ -725,12 +740,16 @@ class Editor extends React.Component {
         newWidth = (newWidth < minSize) ? minSize : newWidth;
         newHeight = (newHeight < minSize) ? minSize : newHeight;
 
-        console.log(newWidth + "  " + newHeight);
+        //console.log(newWidth + "  " + newHeight);
+        //console.log('cellview.model: ', cellView.model);
         //set this as part of state?
         cellView.model.set({
             position: { x: newPosX, y: newPosY },
             size: { width: newWidth, height: newHeight }
         });
+        //cellView.model.attr({
+        //    cornerBox: {d: 'M 0 120 H 120 120 V 120 0'}
+        //})
 
         // To make the highlight follow the actual border
         cellView.unhighlight();
@@ -738,6 +757,7 @@ class Editor extends React.Component {
     }
 
     beginMovePaper(e, x, y) {
+        console.log('HELLO');
         this.setState({ paperMove: { moving: true, x, y } });
     }
     
@@ -756,41 +776,38 @@ class Editor extends React.Component {
 
     onHover(cellView, evt) {
         //console.log(cellView);
-        if (cellView.model.attributes.type !== 'coras.roundRectElement') {
-            cellView.showTools()
-            return;
+        if (cellView.model.attributes.type === 'coras.roundRectElement' || cellView.model.attributes.type === 'coras.riskElement') { //WIP    
+            var cell = cellView.model;
+
+            cellView.highlight();
+            // show subelement of rect
+            //cell.attr('corners/visibility', 'visible');
+            //groupselector not working for some reason
+            cell.attr({
+                sizeSelectorUL: { visibility: 'visible' },
+                sizeSelectorUR: { visibility: 'visible' },
+                sizeSelectorLL: { visibility: 'visible' },
+                sizeSelectorLR: { visibility: 'visible' }
+            });
+        } else {
+            cellView.showTools();
         }
-
-        var cell = cellView.model;
-
-        cellView.highlight();
-        // show subelement of rect
-        //cell.attr('corners/visibility', 'visible');
-        //groupselector not working for some reason
-        cell.attr({
-            sizeSelectorUL: { visibility: 'visible' },
-            sizeSelectorUR: { visibility: 'visible' },
-            sizeSelectorLL: { visibility: 'visible' },
-            sizeSelectorLR: { visibility: 'visible' }
-        });
     }
 
     exitHover(cellView, evt) {
         //var cell = cellView.model;
-        if (cellView.model.attributes.type !== 'coras.roundRectElement') {
-            return;
+        if (cellView.model.attributes.type === 'coras.roundRectElement' || cellView.model.attributes.type === 'coras.riskElement') { //WIP    
+            var cell = cellView.model;
+
+            cellView.unhighlight();
+            //cell.attr('corners/visibility', 'hidden');
+            cell.attr({
+                sizeSelectorUL: { visibility: 'hidden' },
+                sizeSelectorUR: { visibility: 'hidden' },
+                sizeSelectorLL: { visibility: 'hidden' },
+                sizeSelectorLR: { visibility: 'hidden' }
+            });
         }
-
-        var cell = cellView.model;
-
-        cellView.unhighlight();
-        //cell.attr('corners/visibility', 'hidden');
-        cell.attr({
-            sizeSelectorUL: { visibility: 'hidden' },
-            sizeSelectorUR: { visibility: 'hidden' },
-            sizeSelectorLL: { visibility: 'hidden' },
-            sizeSelectorLR: { visibility: 'hidden' }
-        });
     }
 
     updatePaperSize() {
@@ -816,15 +833,16 @@ class Editor extends React.Component {
         this.embedElement(cellView);
     }
 
-    saveGraphToFile(e) {
-        e.preventDefault();
+    saveGraphToFile(fileName) {
         const a = document.createElement('a');
         const graphContent = new Blob([JSON.stringify(this.graph.toJSON(), null, 2)], { type: 'text/plain' });
         a.href = URL.createObjectURL(graphContent);
         //a.download = "CORASDiagram.json";
-        a.download = "CORASDiagram_" + this.props.currGraph.label + ".json";
+        a.download = fileName + ".json";
         a.click();
         a.remove();
+
+
     }
 
     loadGraphFromFile(e) {
@@ -844,7 +862,7 @@ class Editor extends React.Component {
         this.props.clearConfirmed();
     }
 
-    downloadSvg() {
+    downloadSvg(fileName) {
         let svgElement = this.paper.svg;
         const toolElems = svgElement.getElementsByClassName("link-tools");
         const arrowElems = svgElement.getElementsByClassName("marker-arrowhead");
@@ -856,7 +874,7 @@ class Editor extends React.Component {
         arrowArray.forEach((elem) => elem.remove());
 
         // Add other standard font
-        svgElement.style.fontFamily = "Oswald, sans-serif";
+        //svgElement.style.fontFamily = "Oswald, sans-serif";
 
         //get svg source.
         let serializer = new XMLSerializer();
@@ -883,13 +901,13 @@ class Editor extends React.Component {
 
         let a = document.createElement('a');
         a.href = url;
-        a.download = 'CORASDiagram.svg';
+        a.download = fileName + ".svg";
         a.click();
         a.remove();
     }
 
     cellToolHandleMoved(e) {
-        console.log('Celltoolhandlemoved');
+        //console.log('Celltoolhandlemoved');
         const { pageX, pageY } = e;
 
         const newHeight = pageY - (this.props.cellTool.position.y + this.props.cellToolHeight) + this.props.cellToolHeight;
@@ -931,7 +949,9 @@ class Editor extends React.Component {
                     clearPosition={this.props.clearPosition}
                     clearClicked={this.props.clearClicked}
                     downloadFn={this.downloadSvg}
-                    currDiagram={this.props.currGraph.label} />
+                    currDiagram={this.props.currGraph.label}
+                    setModalPosition={this.props.setModalPosition}
+                />
                 <DiagramSelector
                     isInteractive={this.props.interactive}
                     handleScroll={this.handleScroll}
@@ -954,6 +974,10 @@ class Editor extends React.Component {
                     heightChange={this.props.elementEditorChangeHeight}
                     widthChange={this.props.elementEditorChangeWidth}
                     sizeChange={this.props.elementEditorChangeSize}
+                    showClearModalElement={this.props.showClearModalElement}//
+                    clearPosition={this.props.clearPosition}//
+                    clearClicked={this.props.clearClicked}//
+                    elementChangeIndicatorType={this.props.elementChangeIndicatorType}
                     perspectiveOnChange={this.props.elementEditorChangePerspective} /> : null}
                 {this.props.infoBox.visible  ? 
                     <InfoBox />
@@ -974,27 +998,10 @@ class Editor extends React.Component {
     }
 }
 
-
-
-const EditorMenu = ({ loadStartFn, loadRef, loadFn, saveFn, clearFn, showClearModal, clearClicked, clearPosition, downloadFn, currDiagram }) =>
-    <div className="editor-menu">
-        <button className="editor-menu__button" onClick={loadStartFn}>Load</button>
-        <input type="file" name="loadFile" label="Load" className="editor-menu__hidden" onChange={loadFn} ref={loadRef} />
-        <button className="editor-menu__button" onClick={saveFn}>Save</button>
-        <button className="editor-menu__button" onClick={clearClicked}>Clear</button>
-        <Modal isOpen={showClearModal} noBackground={true} position={clearPosition}>
-            <div className="editor-clear-modal">
-                <div className="editor-clear-modal__description">Are you sure you want to clear the {currDiagram} diagram?</div>
-                <button className="editor-clear-modal__button editor-clear-modal__button--danger" onClick={clearFn}>Yes, clear</button>
-                <button className="editor-clear-modal__button editor-clear-modal__button" onClick={clearClicked}>No, cancel</button>
-            </div>
-        </Modal>
-        <button className="editor-menu__button" onClick={downloadFn}>Download (SVG)</button>
-    </div>;
-
 export default connect((state) => ({
     elementEditor: state.editor.elementEditor,
     showClearModal: state.editor.editorMenu.showClearModal,
+    showClearModalElement: state.editor.editorMenu.showClearModalElement,
     clearPosition: state.editor.editorMenu.clearPosition,
     cellTool: state.editor.cellTool,
     cellToolWidth: state.editor.cellTool.size.width,
@@ -1035,5 +1042,8 @@ export default connect((state) => ({
     setCellResizing: (boolean) => dispatch(SetCellResizing(boolean)),
     setElementPosition: (pos) => dispatch(SetElementPosition(pos)),
     setMovingLinks: (arr) => dispatch(SetMovingLinks(arr)),
-    toggleInfoBox: (pos, bool, category, id) => dispatch(ToggleInfoBox(pos, bool, category, id))
+    toggleInfoBox: (pos, bool, category, id) => dispatch(ToggleInfoBox(pos, bool, category, id)),
+    setEditorPosition: (pos) => dispatch(SetEditorPosition(pos)),
+    setModalPosition: (pos) => dispatch(SetModalPosition(pos)),
+    elementChangeIndicatorType: (indicatorType) => dispatch(ElementChangeIndicatorType(indicatorType))
 }))(Editor);

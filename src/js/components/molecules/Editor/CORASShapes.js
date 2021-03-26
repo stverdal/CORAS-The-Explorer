@@ -158,6 +158,47 @@ function AddCorasShapes(joint) {
             }
         ]
     });
+    joint.dia.Element.define("coras.indicatorElement", {
+        attrs: {
+            body: {
+                refX: "0",
+                refY: "0",
+                refWidth: "100%",
+                refHeight: "100%",
+                fill: "#FFF",
+                stroke: "#000",
+                magnet: true
+            },
+            innerBody: {
+                refX: "15%",
+                refY: "15%",
+                refWidth: "70%",
+                refHeight: "70%",
+                fill: "#FFF"
+            },
+            text: {
+                refX: "50%",
+                refY: "40%",
+                textVerticalAnchor: "middle",
+                textAnchor: "middle"
+            }
+        }
+    }, {
+        markup: [
+            {
+                tagName: "rect",
+                selector: "body"
+            },
+            {
+                tagName: "rect",
+                selector: "innerBody"
+            },
+            {
+                tagName: "text",
+                selector: "text"
+            }
+        ]
+    });
     joint.dia.Element.define("coras.riskElement", {
         attrs: {
             body: {
@@ -195,6 +236,38 @@ function AddCorasShapes(joint) {
                 textVerticalAnchor: 'middle',
                 textAnchor: 'middle'
             },
+            sizeSelectorUL: {
+                event: 'element:sizeSelector:pointerdown',
+                visibility: 'hidden',
+                r: 7,
+                opacity: 0.5,
+                refX: "1%",
+                refY: "1%"
+            },
+            sizeSelectorUR: {
+                event: 'element:sizeSelector:pointerdown',
+                visibility: 'hidden',
+                r: 7,
+                opacity: 0.5,
+                refX: "99%",
+                refY: "1%"
+            },
+            sizeSelectorLL: {
+                event: 'element:sizeSelector:pointerdown',
+                visibility: 'hidden',
+                r: 7,
+                opacity: 0.5,
+                refX: "1%",
+                refY: "99%"
+            },
+            sizeSelectorLR: {
+                event: 'element:sizeSelector:pointerdown',
+                visibility: 'hidden',
+                r: 7,
+                opacity: 0.5,
+                refX: "99%",
+                refY: "99%"
+            }
         }
     }, {
         markup: [
@@ -217,6 +290,26 @@ function AddCorasShapes(joint) {
             {
                 tagName: "text",
                 selector: "value"
+            },
+            {
+                tagName: "circle",
+                selector: "sizeSelectorUL",
+                groupSelector: "corners"
+            },
+            {
+                tagName: "circle",
+                selector: "sizeSelectorUR",
+                groupSelector: "corners"
+            },
+            {
+                tagName: "circle",
+                selector: "sizeSelectorLL",
+                groupSelector: "corners"
+            },
+            {
+                tagName: "circle",
+                selector: "sizeSelectorLR",
+                groupSelector: "corners"
             }
         ]
     });

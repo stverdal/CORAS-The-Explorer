@@ -88,7 +88,7 @@ export const ToolTabSelected = (tabNo) => ({
 
 export const MenuClearClicked = (e) => ({
     type: ActionTypes.EDITOR.MENU_CLEAR_CLICKED,
-    payload: { event: e }
+    payload: { event: e}
 });
 
 export const MenuClearConfirmed = () => ({
@@ -157,4 +157,23 @@ export const SetMovingLinks = (arr) => ({
 export const ToggleInfoBox = (pos, bool, category, id) => ({
     type: ActionTypes.EDITOR.TOGGLE_INFO_BOX,
     payload: { pos, bool, category, id }
+});
+
+export const SetEditorPosition = (pos) => ({
+    type: ActionTypes.EDITOR.SET_EDITOR_POSITION,
+    payload: { pos }
+});
+
+export const SetModalPosition = (pos) => ({
+    type: ActionTypes.EDITOR.SET_MODAL_POSITION,
+    payload: { pos }
+});
+
+export const ToggleIndicators = () => ({
+    type: ActionTypes.EDITOR.TOGGLE_INDICATORS
+});
+
+export const ElementChangeIndicatorType = (indicatorType) => ({
+    type: ActionTypes.EDITOR.ELEMENT_CHANGE_INDICATOR_TYPE,
+    payload: { indicatorType }
 });

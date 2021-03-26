@@ -191,27 +191,6 @@ export default [
         role: "risk"
     },
     {
-        shapeFn: () => new joint.shapes.coras.rectElement(),
-        width: 190,
-        height: 80,
-        //fill,
-        iconHeight: indicatorHeight,
-        icon: expand,
-        text: "Indicator",
-        id: "indicator",
-        perspectives: {
-            0: { "icon/href": expand, "body/strokeDasharray": "", "icon/height": indicatorHeight },
-            1: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight },
-            2: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight }
-        },
-        existsIn: {
-            //threat: true,
-            //treatment: true
-        },
-        role: "indicator",
-        fill: "#668FBA"
-    },
-    {
         shapeFn: () => new joint.shapes.coras.roundRectElement(),
         width: 300,
         height: 300,
@@ -316,5 +295,26 @@ export default [
             treatment_overview: true
         },
         role: "treatment"
+    },
+    {
+        shapeFn: () => new joint.shapes.coras.indicatorElement(),
+        width: 190,
+        height: 80,
+        //fill,
+        iconHeight: indicatorHeight,
+        icon: expand,
+        text: "Indicator",
+        id: "indicator",
+        perspectives: {
+            0: { "icon/href": expand, "body/strokeDasharray": "", "icon/height": indicatorHeight },
+            1: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight },
+            2: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight }
+        },
+        existsIn: {
+            threat: true,
+            treatment: true
+        },
+        role: "indicator",
+        indicatorType: "businessConfiguration"
     },
 ]
