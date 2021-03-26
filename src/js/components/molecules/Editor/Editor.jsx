@@ -129,7 +129,7 @@ class Editor extends React.Component {
                 //this.props.setGraph(type, placeHolder, this.paper.scale(), this.paper.translate());
             }
         });
-        window.localStorage.removeItem(this.paperId + "graph_" + currTab); // use if graph contains critical bug.
+        //window.localStorage.removeItem(this.paperId + "graph_" + currTab); // use if graph contains critical bug.
         this.props.setCurrGraph(currTab, this.graph.toJSON()); //TODO
         return window.localStorage.getItem(this.paperId + "graph_" + currTab);
     }
