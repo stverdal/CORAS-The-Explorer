@@ -165,41 +165,36 @@ function Editor(state, action) {
             }
 
         case ActionTypes.EDITOR.ELEMENT_DOUBLE_CLICKED:
-            console.log("dblclick");
-            console.log(action.payload.element);
             let {element, event} = action.payload; //TODO check on this
-            //console.log(element);
-            //console.log(event);
-            //console.log(action.payload.element.label(0).attrs.text.text);
 
             return Object.assign({}, state, {
                 elementEditor: {
                     visible: true,
                     //store original values.
-                    originalLabel: action.payload.element.isLink() ?
-                        action.payload.element.label(0).attrs.text.text :
-                        action.payload.element.attr('text/text'),
+                    originalLabel: element.isLink() ?
+                        element.label(0).attrs.text.text :
+                        element.attr('text/text'),
                     //TODO improve this, maybe parse to int, as well as fix element value.
-                    originalValue: action.payload.element.isLink() ? //TODO
-                        action.payload.element.label(1).attrs.text.text :
-                        action.payload.element.attr('value/text'), //TODO
-                    originalPosition: action.payload.element.isLink() ? { x: null, y: null } : action.payload.element.position(),
-                    originalSize: action.payload.element.isLink() ? { height: null, width: null } : action.payload.element.size(),
+                    originalValue: element.isLink() ? //TODO
+                        element.label(1).attrs.text.text :
+                        element.attr('value/text'), //TODO
+                    originalPosition: element.isLink() ? { x: null, y: null } : element.position(),
+                    originalSize: element.isLink() ? { height: null, width: null } : element.size(),
                     data: {
-                        isLink: action.payload.element.isLink(),
+                        isLink: element.isLink(),
                         editorPosition: {
-                            left: action.payload.event.pageX,
-                            top: action.payload.event.pageY
+                            x: event.offsetX,
+                            y: event.offsetY
                         },
-                        element: action.payload.element,
-                        label: action.payload.element.isLink() ?
-                            action.payload.element.label(0).attrs.text.text :
-                            _.get(action.payload.element, "0.attrs.text.text", ""),
-                        value: action.payload.element.isLink() ?
-                            action.payload.element.label(1).attrs.text.text :
-                            _.get(action.payload.element, "0.attrs.value.text", ""),
-                        position: action.payload.element.isLink() ? { x: null, y: null } : action.payload.element.position(),
-                        type: parseInt(action.payload.element.get('corasType'))
+                        element: element,
+                        label: element.isLink() ?
+                            element.label(0).attrs.text.text :
+                            _.get(element, "0.attrs.text.text", ""),
+                        value: element.isLink() ?
+                            element.label(1).attrs.text.text :
+                            _.get(element, "0.attrs.value.text", ""),
+                        position: element.isLink() ? { x: null, y: null } : element.position(),
+                        type: parseInt(element.get('corasType'))
                     }
                 }
             });
@@ -255,18 +250,28 @@ function Editor(state, action) {
             newState.elementEditor.data.label = action.payload.label;
             return newState;
 
-        //TODO
+        //TODO "[" + action.payload.value + "]"
         case ActionTypes.EDITOR.ELEMENT_VALUE_EDIT:
+            var wrapped = action.payload.value === '' ? action.payload.value : (() => {
+                let i = 0;
+                while (action.payload.value[i] === '\n') {
+                    i++;
+                }
+                console.log("YO ", action.payload.value.toString().slice(0,i), action.payload.value.toString().slice(i))
+                return action.payload.value.toString().slice(0,i) +  "[" + action.payload.value.toString().slice(i) + "]";
+            })();
             if(newState.elementEditor.data.element.isLink()) {
                 newState.elementEditor.data.element.label(1, {
                     attrs: {
                         text: {
-                            text: action.payload.value
+                            //text: action.payload.value
+                            text: wrapped
                         }
                     }
                 });
             } else {
-                newState.elementEditor.data.element.attr('value/text', action.payload.value);
+                //newState.elementEditor.data.element.attr('value/text', action.payload.value);
+                newState.elementEditor.data.element.attr('value/text', wrapped);
             }
             newState.elementEditor.data.value = action.payload.value;
             return newState;
@@ -367,8 +372,6 @@ function Editor(state, action) {
             return newState;
 
         case ActionTypes.EDITOR.MENU_CLEAR_CLICKED:
-            console.log('Clear clicked', action.payload.event)
-            console.log('Checking', action.payload.event.target.innerText)
             //Not very scalable, both prompts removed if one closed.
             if (action.payload.event.target.innerText === "Clear") {
                 console.log('Open clear')

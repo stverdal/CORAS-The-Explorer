@@ -22,13 +22,15 @@ const EditorMenu = ({ loadStartFn, loadRef, loadFn, saveFn, clearFn, showClearMo
     const saveFile = (e) => {
         e.preventDefault();
         saveFn(fileName);
-        flipFileBool();
+        //flipFileBool();
+        setFileModalBool(false);
     }
 
     const saveSVG = (e) => {
         e.preventDefault();
         downloadFn(svgName);
-        flipSvgModalBool();
+        //flipSvgModalBool();
+        setSvgModalBool(false); //force
     }
 
     const flipFileBool = (e) => {

@@ -61,10 +61,10 @@ export default {
             description: "A vulnerability is a weakness, flaw or deficiency that opens for, or may be exploited by, a threat to cause harm to or reduce the value of an asset."
         },
         treatment: {
-            description: "A treatment can be applied anywhere in the diagram, though most frequently on vulnerabilties."
+            description: "A treatment refers to a method that can be used to decrease the likelihood and or consequence of risk. It can be applied anywhere in the diagram, though most frequently on vulnerabilties."
         },
         indicator: {
-            description: "An indicator indicates..."
+            description: "An indicator can be used to describe events or features of a system that may affect the risk evaluation. There are four types of indicators available, depending on where and how the indicator is implemented. "
         }
     }
 };

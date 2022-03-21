@@ -100,7 +100,6 @@ class Editor extends React.Component {
         this.onHover = this.onHover.bind(this);
         this.exitHover = this.exitHover.bind(this);
         this.toggleInfo = this.toggleInfo.bind(this);
-        this.moveItem = this.moveItem.bind(this);
     }
 
     saveToLocalStorage() {
@@ -139,13 +138,6 @@ class Editor extends React.Component {
         if (this.props.infoBox.visible) {
             this.props.toggleInfoBox({x:0,y:0}, false, "", "");
         }
-    }
-
-    //Should not be needed atm
-    moveItem(e) {
-        //console.log("HELLO");
-        //console.log(e);
-        //this.props.setEditorPosition({x:e.clientX,y:e.clientY})
     }
 
     componentDidMount() {
@@ -231,7 +223,6 @@ class Editor extends React.Component {
             this.paper.on('element:sizeSelector:pointerdown', this.beginElementResize);
         }
     }
-
     //TODO, understand this better.
     //This function attaches the toolView containing linkTools to the link provided.
     attachTools(link) {
@@ -308,6 +299,8 @@ class Editor extends React.Component {
                 arrowheadShape = "M 0 0 a 5 5 0 1 1 10 0 a 5 5 0 1 1 -10 0 ";
                 fill = 'white';
                 break;
+            case 'indicates':
+                link.attr('line/strokeDasharray', '4 2');
         }
         link.attr('line/targetMarker', { 
             d: arrowheadShape,
@@ -379,10 +372,12 @@ class Editor extends React.Component {
     embedElement(cellView, evt, x, y) {
         var cell = cellView.model;
         if (cell.attributes.type === 'coras.defaultLink') {
-            if (cell.getTargetElement() === null ||cell.getSourceElement().cid === cell.getTargetElement().cid) {
+            //removes selftargeting
+            if (cell.getTargetElement() === null || cell.getSourceElement().cid === cell.getTargetElement().cid) {
                 cell.remove();
                 return;
             }
+            console.log('Check for list of relations ', cell);
             var source = cell.getSourceElement().attributes.role;
             var target;
             if (cell.getTargetElement()) {

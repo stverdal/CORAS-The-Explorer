@@ -50,3 +50,11 @@ a {
     width: 95%;
     margin: 1rem auto auto auto;
 }
+
+.about-page a:link {
+    color: #0000EE;
+}
+
+.about-page a:visited {
+     color: #551A8B;
+}

@@ -6,10 +6,9 @@ import Modal from '../../atoms/Modal/Modal';
 
 const ElementEditor = (props) => {
 
-    const [position, setPosition] = useState(() => {
-        return props.isLink ? { x: null, y: null } : props.element.position();
-    }); 
-    
+    const [position, setPosition] = useState(props.editorPosition);
+
+    console.log("Elementeditor props -> ", props);
     const [deletePos, setDeletePos] = useState(position);
 
     const [minInnerSize, setMinInnerSize] = useState({width: 90, height: 90});
@@ -87,6 +86,7 @@ const ElementEditor = (props) => {
         //test
         props.valueOnChange(e.target.value);
         //setState({ value: e.target.value });
+        //Wraps the displaystring in square brackets
         setValue(e.target.value);
     }
 
@@ -197,13 +197,18 @@ const ElementEditor = (props) => {
     }
 
     const deleteClicked = (e) => {
+
+        console.log("EVENT: ", e);
+        console.log("X:", e.clientX," Y:", e.clientY);
+        setDeletePos({x: e.clientX, y: e.clientY});
+        console.log("deletePos: ", deletePos)
+        props.clearClicked(e);
         console.log("Delete Clicked");
         return
     }
 
     return (
         <Draggable
-            //defaultPosition={{x: position.x + size.width, y: position.y}}
             defaultPosition={position}
         >
             <form className="element-editor" >
@@ -268,13 +273,13 @@ const ElementEditor = (props) => {
             <div className="element-editor-section">
                 <button className="element-editor-section__button element-editor-section__button--cta" type="button" onClick={props.save}>Save</button>
                 <button className="element-editor-section__button" type="button" onClick={props.cancel}>Cancel</button>
-                <button className="element-editor-section__button element-editor-section__button--danger" type="button" onClick={props.clearClicked}>Delete</button> 
+                <button className="element-editor-section__button element-editor-section__button--danger" type="button" onClick={deleteClicked}>Delete</button> 
             </div>
-            <Modal isOpen={props.showClearModalElement} noBackground={true} position={props.clearPosition - position}>
+            <Modal isOpen={props.showClearModalElement} noBackground={true} position={deletePos}>
                     <div className="delete-warning-modal">
                         <div className="delete-warning-modal__description">Are you sure you want to delete the element?</div>
                         <button className="delete-warning-modal__button delete-warning-modal__button--danger" onClick={props.delete}>Yes, delete</button>
-                        <button className="delete-warning-modal__button delete-warning-modal__button" onClick={props.clearClicked}>No, cancel</button>
+                        <button className="delete-warning-modal__button delete-warning-modal__button" onClick={deleteClicked}>No, cancel</button>
                     </div>
                 </Modal>
         </form>

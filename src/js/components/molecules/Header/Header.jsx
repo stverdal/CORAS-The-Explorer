@@ -17,6 +17,11 @@ const Header = ({ location }) =>
     <header className="main-header">
         <div className="main-header-wrapper">
             <div className="header-logo"><Link to='/'>CORAS</Link></div>
+            <nav className="main-menu-container">
+                <ul className="main-menu">
+                    <li className={"main-menu main-menu__item" + (window.location.pathname === '/about' ? " main-menu__item--selected" : "")}><Link to={"/about"}>About</Link></li>
+                </ul>
+            </nav>
         </div>
     </header>;
 

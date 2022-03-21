@@ -4,6 +4,7 @@ import {
     assetSymbol,
     assetSymbolOutlined,
     assetSymbolShaded,
+    indicatorSymbol,
     indirectAssetSymbol,
     indirectAssetSymbolOutlined,
     indirectAssetSymbolShaded,
@@ -302,13 +303,13 @@ export default [
         height: 80,
         //fill,
         iconHeight: indicatorHeight,
-        icon: expand,
+        icon: indicatorSymbol,
         text: "Indicator",
         id: "indicator",
         perspectives: {
-            0: { "icon/href": expand, "body/strokeDasharray": "", "icon/height": indicatorHeight },
-            1: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight },
-            2: { "icon/href": expand, "body/strokeDasharray": "8, 4", "icon/height": indicatorHeight }
+            0: { "icon/href": indicatorSymbol, "body/strokeDasharray": "", "icon/height": indicatorHeight },
+            1: { "icon/href": indicatorSymbol, "body/strokeDasharray": "", "icon/height": indicatorHeight },
+            2: { "icon/href": indicatorSymbol, "body/strokeDasharray": "", "icon/height": indicatorHeight }
         },
         existsIn: {
             threat: true,

@@ -176,6 +176,10 @@ function AddCorasShapes(joint) {
                 refHeight: "70%",
                 fill: "#FFF"
             },
+            icon: {
+                refX: "90%",
+                refY: "-25%"
+            },
             text: {
                 refX: "50%",
                 refY: "40%",
@@ -192,6 +196,10 @@ function AddCorasShapes(joint) {
             {
                 tagName: "rect",
                 selector: "innerBody"
+            },
+            {
+                tagName: "image",
+                selector: "icon"
             },
             {
                 tagName: "text",
