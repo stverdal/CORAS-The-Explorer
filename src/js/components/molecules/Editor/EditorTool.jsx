@@ -44,11 +44,12 @@ const EditorToolBar = ({ beginMoveElement, svgs, toggleInfoBox, currentPerspecti
                     onContextMenu={(e) => displayInfo(e, svg.id)}
                     onDragStart={(e) => {
                         const shape = svg.shapeFn();
+                        console.log("SVGS", svgs)
                         if(svg.attrs)
                             Object.keys(svg.attrs).map((key, index) => shape.attr(key, svg.attrs[key]));
 
                         const styles = svg.perspectives[currentPerspective]; 
-                        console.log(`STYLES `, styles)
+                        //console.log(`STYLES `, styles)
                         Object.keys(styles).forEach((ref) => shape.attr(ref, styles[ref]));
                         shape.attr("text/text", svg.text);
                         shape.attr("value/text", "");
@@ -60,6 +61,7 @@ const EditorToolBar = ({ beginMoveElement, svgs, toggleInfoBox, currentPerspecti
                         // set custom fill color in ellipse and rect
                         if (svg.indicatorType) {
                             shape.set('indicatorType', svg.indicatorType);
+                            shape.set('indicatorValue', 1.0); //sets indicator value to 1.0 by default
                             shape.attr("body/fill", indicatorTypes[svg.indicatorType]);
                             shape.attr("innerBody/fill", indicatorTypes[svg.indicatorType]);
                         }

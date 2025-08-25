@@ -1,7 +1,10 @@
 import { riskSymbol } from "./svg//CorasSymbolsBase64.js";
+import {dia} from '@joint/core'
 
-function AddCorasShapes(joint) {
-    joint.dia.Element.define("coras.unboxedElement", {
+function AddCorasShapes() {
+    console.log(dia)
+    //console.log("joint", joint)
+    dia.Element.define("coras.unboxedElement", {
         attrs: {
             linkHandler: {
                 refWidth: "225%",
@@ -36,7 +39,7 @@ function AddCorasShapes(joint) {
             }
         ]
     });
-    joint.dia.Element.define("coras.ellipseElement", {
+    dia.Element.define("coras.ellipseElement", {
         attrs: {
             body: {
                 refCx: "50%",
@@ -97,7 +100,7 @@ function AddCorasShapes(joint) {
             }
         ]
     });
-    joint.dia.Element.define("coras.rectElement", {
+    dia.Element.define("coras.rectElement", {
         attrs: {
             body: {
                 refX: "0",
@@ -158,7 +161,7 @@ function AddCorasShapes(joint) {
             }
         ]
     });
-    joint.dia.Element.define("coras.indicatorElement", {
+    dia.Element.define("coras.indicatorElement", {
         attrs: {
             body: {
                 refX: "0",
@@ -207,7 +210,7 @@ function AddCorasShapes(joint) {
             }
         ]
     });
-    joint.dia.Element.define("coras.riskElement", {
+    dia.Element.define("coras.riskElement", {
         attrs: {
             body: {
                 refX: "0",
@@ -321,7 +324,7 @@ function AddCorasShapes(joint) {
             }
         ]
     });
-    joint.dia.Element.define("coras.roundRectElement", {
+    dia.Element.define("coras.roundRectElement", {
         attrs: {
             body: {
                 rx: 15,
@@ -421,7 +424,7 @@ function AddCorasShapes(joint) {
             }
         ]
     });
-    joint.dia.Link.define("coras.defaultLink", {
+    dia.Link.define("coras.defaultLink", {
         defaultLabel: {
             markup: [
                 {

@@ -177,3 +177,13 @@ export const ElementChangeIndicatorType = (indicatorType) => ({
     type: ActionTypes.EDITOR.ELEMENT_CHANGE_INDICATOR_TYPE,
     payload: { indicatorType }
 });
+
+export const ElementChangeIndicatorValue = (indicatorValueLabel, indicatorValue) => ({
+    type: ActionTypes.EDITOR.ELEMENT_CHANGE_INDICATOR_VALUE,
+    payload: { indicatorValueLabel, indicatorValue }
+});
+
+export const ModifyRisk = (riskScale, type, id) => ({
+    type: ActionTypes.EDITOR.MODIFY_RISK,
+    payload: { riskScale, type, id }
+});

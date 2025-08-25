@@ -81,6 +81,7 @@
     margin: 1rem;
     display: flex;
     flex-wrap: wrap;
+    overflow: visible; /* ensures modals under this element are not constrained */
 }
 
 .editor-menu__button {
@@ -89,6 +90,7 @@
     border: solid 1px #FFF;
     padding: .5rem;
     color: white;
+    position: relative;
 }
 
 .editor-menu__hidden {

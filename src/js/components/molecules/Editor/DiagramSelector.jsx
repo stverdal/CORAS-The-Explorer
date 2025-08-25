@@ -19,7 +19,7 @@ const DiagramSelector = ({ currGraph, changeGraph, selectedTab, diagramOptions, 
 
     const switchDiagram = diagramLabel => {
         //check if diagram exists
-        // save current diagram
+        // save current diagram TODO
         if (diagramLabel === currGraph.label) {
             return;
         }
@@ -56,6 +56,15 @@ const DiagramSelector = ({ currGraph, changeGraph, selectedTab, diagramOptions, 
                     </div>
                 </a>
             )}
+{/*             <a
+                //onClick={() => switchDiagram(currElem)}
+                //key={i}
+                //onContextMenu={(e) => displayInfo(e, currElem)}
+                className="diagram-tabrow__tablink">
+                <div
+                    className="diagram-tabrow__tab">Test
+                </div>
+            </a> */}
         </div>
     );
 };

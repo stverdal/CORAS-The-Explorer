@@ -1,0 +1,48 @@
+.scales {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px;
+}
+
+.risk-levels, .likelihood-levels {
+    width: 45%;
+    background-color: #f9f9f9;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.scale-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch; /* Ensure all items stretch to the same height */
+    margin-bottom: 0; /* Remove gap between rows */
+}
+
+.scale-item input, .scale-item textarea {
+    width: 30%;
+    padding: 10px;
+    margin: 0; /* Remove gap between inputs */
+    border: 1px solid #ccc;
+    font-size: 16px;
+    flex-grow: 1; /* Allow inputs to grow and fill the available space */
+}
+
+.scale-item textarea {
+    resize: none; /* Prevent manual resizing */
+    height: auto; /* Adjust height based on content */
+}
+
+.scale-item input:focus, .scale-item textarea:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+.scale-item input::placeholder, .scale-item textarea::placeholder {
+    color: #999;
+}

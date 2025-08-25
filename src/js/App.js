@@ -9,6 +9,7 @@ import About from './components/pages/About';
 import Learn from './components/pages/Learn';
 import EditorPage from './components/pages/EditorPage';
 import QuickStart from './components/pages/QuickStart';
+import RiskInfo from './components/pages/RiskInfo';
 
 const App = (props) =>
     <Router>
@@ -20,6 +21,7 @@ const App = (props) =>
                 <Route path={'/learn'} component={Learn} />
                 <Route path={'/about'} component={About} />
                 <Route path={'/try-it'} component={EditorPage} />
+                <Route path={'/riskinfo'} component={RiskInfo} />
             </div>
             <Footer />
         </div>

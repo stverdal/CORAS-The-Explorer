@@ -1,7 +1,8 @@
 import { createStore, combineReducers } from 'redux';
 import ActionTypes from './ActionTypes';
-import joint from 'jointjs';
-import _ from 'lodash';
+//import joint from 'jointjs';
+import { shapes } from '@joint/core'
+import _, { range } from 'lodash';
 import ToolDefinitions from '../components/molecules/Editor/ToolDefinitions';
 
 const rootReducer = combineReducers({ editor: Editor });
@@ -128,7 +129,6 @@ function Editor(state, action) {
             testResult: "#AFC499",
             networkMonitoring: "#FFFFD2",
             applicationMonitoring: "#E6A99A"
-
         },
         cellResizing: false,
         elementPosition: {
@@ -136,7 +136,52 @@ function Editor(state, action) {
             y: 0
         },
         movingLinks: [],
-        indicatorsToggled: false
+        indicatorsToggled: false,
+        risk: {
+            consequenceScales: {
+                default: [
+                    { name: 'Negligible', value: 1, description: 'No significant impact', range: { min: 0, max: 999 }, rangeString: '0 - 999' },
+                    { name: 'Minor', value: 2, description: 'Minor impact on operations', range: { min: 1000, max: 4999 }, rangeString: '1000 - 4999' },
+                    { name: 'Moderate', value: 3, description: 'Noticeable impact on operations', range: { min: 5000, max: 9999 }, rangeString: '5000 - 9999' },
+                    { name: 'Major', value: 4, description: 'Significant impact on operations', range: { min: 10000, max: 19999 }, rangeString: '10000 - 19999' },
+                    { name: 'Critical', value: 5, description: 'Severe impact on operations', range: { min: 20000, max: 100000 }, rangeString: '20000 - 100000' }
+                ],
+                currentScales: [],
+            },
+            likelihoodScales: {
+                default: [
+                    { name: 'Rare', value: 1, description: 'Highly unlikely to occur', range: { min: 0.00, max: 0.01 }, rangeString: '0.00 - 0.01' },
+                    { name: 'Unlikely', value: 2, description: 'Unlikely to occur', range: { min: 0.01, max: 0.05 }, rangeString: '0.01 - 0.05' },
+                    { name: 'Possible', value: 3, description: 'Possible to occur', range: { min: 0.05, max: 0.10 }, rangeString: '0.05 - 0.10' },
+                    { name: 'Likely', value: 4, description: 'Likely to occur', range: { min: 0.10, max: 0.25 }, rangeString: '0.10 - 0.25' },
+                    { name: 'Very Likely', value: 5, description: 'Highly likely to occur', range: { min: 0.25, max: 1.00 }, rangeString: '0.25 - 1.00' }
+                ],
+                currentScales: [],
+            },
+            timeUnitToYearFactor: {
+                second: 60 * 60 * 24 * 365,
+                minute: 60 * 24 * 365,
+                hour: 24 * 365,
+                day: 365,
+                week: 52,
+                month: 12,
+                year: 1
+            },
+            indicatorSettings: {
+                boolean: { trueValue: 1.5, falseValue: 0.5 },
+                integer: {
+                    direction: 'lowIsGood',
+                    method: 'threshold',
+                    thresholds: [
+                        { min: 0, max: 5, value: 0.5 },
+                        { min: 6, max: 10, value: 1.0 },
+                        { min: 11, max: Infinity, value: 1.5 }
+                    ]
+                },
+                scale: { min: 1, max: 10, floatMin: 0.0, floatMax: 2.0 }
+            }
+
+        }
     };
 
     const newState = Object.assign({}, state);
@@ -156,7 +201,7 @@ function Editor(state, action) {
             if (!state.previousElementRightClicked) return Object.assign({}, state, { previousElementRightClicked: action.payload.element });
             else {
                 console.log("LINKLINKLINK");
-                const link = new joint.shapes.coras.link();
+                const link = new shapes.coras.link();
                 link.set('corasType', 0);
                 link.source(state.previousElementRightClicked);
                 link.target(action.payload.element);
@@ -166,6 +211,13 @@ function Editor(state, action) {
 
         case ActionTypes.EDITOR.ELEMENT_DOUBLE_CLICKED:
             let {element, event} = action.payload; //TODO check on this
+
+            //TODO check if textbox
+            //If true, find underlying element
+            console.log("IN STORE,",event);
+            console.log("IN STORE,",event.offsetX);
+            let xPos = event.offsetX;
+            let yPos = event.offsetY;
 
             return Object.assign({}, state, {
                 elementEditor: {
@@ -183,8 +235,8 @@ function Editor(state, action) {
                     data: {
                         isLink: element.isLink(),
                         editorPosition: {
-                            x: event.offsetX,
-                            y: event.offsetY
+                            x: xPos,
+                            y: yPos
                         },
                         element: element,
                         label: element.isLink() ?
@@ -257,7 +309,7 @@ function Editor(state, action) {
                 while (action.payload.value[i] === '\n') {
                     i++;
                 }
-                console.log("YO ", action.payload.value.toString().slice(0,i), action.payload.value.toString().slice(i))
+                //console.log("YO ", action.payload.value.toString().slice(0,i), action.payload.value.toString().slice(i))
                 return action.payload.value.toString().slice(0,i) +  "[" + action.payload.value.toString().slice(i) + "]";
             })();
             if(newState.elementEditor.data.element.isLink()) {
@@ -349,18 +401,30 @@ function Editor(state, action) {
 
             newState.elementEditor.data.element.set('indicatorType', indicatorType);
             return newState;
+
+        case ActionTypes.EDITOR.ELEMENT_CHANGE_INDICATOR_VALUE:
+            let { indicatorValueLabel, indicatorValue } =  action.payload;
+            console.log("payload", action.payload);
+            console.log("indicatorValueLabel", indicatorValueLabel);
+            console.log("indicatorValue", indicatorValue);
+
+            newState.elementEditor.data.element.set('indicatorValue', indicatorValue);
+            newState.elementEditor.data.element.set('indicatorValueLabel', indicatorValueLabel);
+            return newState;
         
 
         case ActionTypes.EDITOR.TOOL_ELEMENT_CLICKED:
             newState.movement = action.payload;
             return newState;
 
+        //TODO
         case ActionTypes.EDITOR.TOOL_ELEMENT_RELEASED:
             if (!newState.movement.element) return newState;
             const elem = newState.movement.element;
             newState.movement.element = null;
             elem.position(action.payload.pageX, action.payload.pageY);
             elem.resize(newState.movement.width, newState.movement.height);
+            console.log("TOOL_ELEMENT_RELEASED", action.payload.pageX, action.payload.pageY);
             action.payload.graph.addCell(elem);
             return newState;
         
@@ -508,6 +572,43 @@ function Editor(state, action) {
         case ActionTypes.EDITOR.TOGGLE_INDICATORS:
             newState.indicatorsToggled = !state.indicatorsToggled;
             return newState;
+
+        case ActionTypes.EDITOR.MODIFY_RISK:
+            const { riskScale, type, id } = action.payload;
+            console.log("MODIFY RISK", riskScale, type, id);
+            if (type === 'CONSEQUENCE_SCALE') {
+
+
+                // Initialize the multiple consequence scales if not already set,
+                // ensuring the first scale is the default.
+                let scales = newState.risk.consequenceScales.currentScales || [];
+                if (scales.length === 0) {
+                    scales[0] = newState.risk.consequenceScales.default;
+                }
+
+                // Replace the scale at the provided id.
+                scales[id] = riskScale;
+                newState.risk.consequenceScales.currentScales = scales;
+                return newState
+
+
+            } else if (type === 'LIKELIHOOD_SCALE') {
+
+                // Initialize the multiple likelihood scales if not already set,
+                // ensuring the first scale is the default.
+                let scales = newState.risk.likelihoodScales.currentScales || [];
+                if (scales.length === 0) {
+                    scales[0] = newState.risk.likelihoodScales.default;
+                }
+
+                // Replace the scale at the provided id.
+                scales[id] = riskScale;
+                newState.risk.likelihoodScales.currentScales = scales;
+                return newState
+
+            }
+
+          
     }
 }
 

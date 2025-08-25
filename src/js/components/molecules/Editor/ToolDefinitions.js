@@ -1,4 +1,5 @@
-import joint from 'jointjs';
+//import joint from 'jointjs';
+import { shapes } from '@joint/core'
 
 import {
     assetSymbol,
@@ -35,6 +36,11 @@ import {
     expand,
 } from "./svg//CorasSymbolsBase64.js"
 
+import {unboxedElement, ellipseElement, rectElement, roundRectElement, indicatorElement, riskElement, defaultLink} from './CShapes.js';
+
+const namespace = { ...shapes, coras: { unboxedElement, ellipseElement, rectElement, roundRectElement, indicatorElement, riskElement, defaultLink } };
+
+
 const assetHeight = 60;
 const riskHeight = 40;
 const indirectHeight = 60;
@@ -50,7 +56,7 @@ const expandHeight = 15;
 
 export default [
     {
-        shapeFn: () => new joint.shapes.coras.unboxedElement(),
+        shapeFn: () => new unboxedElement(),
         width: 40,
         height: 80,
         iconHeight: accidentalHeight,
@@ -68,10 +74,10 @@ export default [
             treatment: true,
             treatment_overview: true
         },
-        role: "threat_source"
+        role: "threat_source_non_malicious"
     },
     {
-        shapeFn: () => new joint.shapes.coras.unboxedElement(),
+        shapeFn: () => new shapes.coras.unboxedElement(),
         width: 40,
         height: 100,
         iconHeight: deliberateHeight,
@@ -89,10 +95,10 @@ export default [
             treatment: true,
             treatment_overview: true
         },
-        role: "threat_source"
+        role: "threat_source_malicious"
     },
     {
-        shapeFn: () => new joint.shapes.coras.unboxedElement(),
+        shapeFn: () => new shapes.coras.unboxedElement(),
         width: 40,
         height: 80,
         iconHeight: nonHumanHeight,
@@ -110,10 +116,10 @@ export default [
             treatment: true,
             treatment_overview: true
         },
-        role: "threat_source"
+        role: "threat_source_non_human"
     },
     {
-        shapeFn: () => new joint.shapes.coras.ellipseElement(),
+        shapeFn: () => new shapes.coras.ellipseElement(),
         width: 190,
         height: 80,
         iconHeight: riskHeight,
@@ -133,7 +139,7 @@ export default [
         role: "threat_scenario",
     },
     {
-        shapeFn: () => new joint.shapes.coras.rectElement(),
+        shapeFn: () => new shapes.coras.rectElement(),
         width: 190,
         height: 80,
         iconHeight: incidentHeight,
@@ -153,7 +159,7 @@ export default [
         role: "unwanted_incident"
     },
     {
-        shapeFn: () => new joint.shapes.coras.riskElement(),
+        shapeFn: () => new shapes.coras.riskElement(),
         width: 190,
         height: 80,
         iconHeight: riskHeight,
@@ -174,7 +180,7 @@ export default [
         role: "risk",
     },
     {
-        shapeFn: () => new joint.shapes.coras.unboxedElement(),
+        shapeFn: () => new shapes.coras.unboxedElement(),
         width: 40,
         height: 80,
         iconHeight: stakeholderHeight,
@@ -192,7 +198,7 @@ export default [
         role: "risk"
     },
     {
-        shapeFn: () => new joint.shapes.coras.roundRectElement(),
+        shapeFn: () => new shapes.coras.roundRectElement(),
         width: 300,
         height: 300,
 
@@ -212,7 +218,7 @@ export default [
         role: "stakeholder"
     },
     {
-        shapeFn: () => new joint.shapes.coras.unboxedElement(),
+        shapeFn: () => new shapes.coras.unboxedElement(),
         width: 40,
         height: 80,
         iconHeight: assetHeight,
@@ -235,7 +241,7 @@ export default [
         role: "direct_asset"
     },
     {
-        shapeFn: () => new joint.shapes.coras.unboxedElement(),
+        shapeFn: () => new shapes.coras.unboxedElement(),
         width: 40,
         height: 80,
         iconHeight: indirectHeight,
@@ -257,7 +263,7 @@ export default [
         role: "indirect_asset"
     },
     {
-        shapeFn: () => new joint.shapes.coras.unboxedElement(),
+        shapeFn: () => new shapes.coras.unboxedElement(),
         width: 40,
         height: 80,
         iconHeight: vulnerabilityHeight,
@@ -277,7 +283,7 @@ export default [
         magnet: 'passive'
     },
     {
-        shapeFn: () => new joint.shapes.coras.ellipseElement(),
+        shapeFn: () => new shapes.coras.ellipseElement(),
         width: 190,
         height: 80,
         iconHeight: treatmentHeight,
@@ -298,7 +304,7 @@ export default [
         role: "treatment"
     },
     {
-        shapeFn: () => new joint.shapes.coras.indicatorElement(),
+        shapeFn: () => new shapes.coras.indicatorElement(),
         width: 190,
         height: 80,
         //fill,
