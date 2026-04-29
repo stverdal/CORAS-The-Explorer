@@ -4,20 +4,22 @@ This is the CORAS Navigator. An LLM-Based Assistant for Cybersecurity Risk Asses
 
 ## Quick Start
 
-Make sure to check `INSTALL.md` to download required dependencies and create your Conda virtual environment (`<env-name>`).
+Set up your Python environment and dependencies by following `INSTALL.md`. Both Conda and pip + `venv` are supported.
 
 ### In a first terminal
 
 ```
-$ conda activate <env-name>
+$ # Activate your environment first
+$ # Conda: conda activate <env-name>
+$ # venv:  source .venv/bin/activate
 
 # On the first time, you would need to download necessary documents for RAG
-(<env-name>) $ make download-rag-documents
+$ make download-rag-documents
 
-(<env-name>) $ make navigator
+$ make navigator
 
 # Optional: choose another local Ollama port
-(<env-name>) $ make navigator OLLAMA_PORT=11436
+$ make navigator OLLAMA_PORT=11436
 ```
 
 ### Use Ollama on another machine (SSH tunnel)
@@ -25,8 +27,8 @@ $ conda activate <env-name>
 If Ollama runs on a remote machine, open a local SSH tunnel first:
 
 ```
-$ conda activate <env-name>
-(<env-name>) $ make ollama-tunnel SSH_TARGET=<user>@<remote-host> REMOTE_OLLAMA_PORT=11434 OLLAMA_PORT=11435
+$ # Activate your environment first
+$ make ollama-tunnel SSH_TARGET=<user>@<remote-host> REMOTE_OLLAMA_PORT=11434 OLLAMA_PORT=11435
 ```
 
 That command stays in the foreground on purpose. After you authenticate, keep that terminal open and use another terminal for Navigator.
@@ -34,15 +36,15 @@ That command stays in the foreground on purpose. After you authenticate, keep th
 If you want the tunnel to detach instead, use:
 
 ```
-$ conda activate <env-name>
-(<env-name>) $ make ollama-tunnel-bg SSH_TARGET=<user>@<remote-host> REMOTE_OLLAMA_PORT=11434 OLLAMA_PORT=11435
+$ # Activate your environment first
+$ make ollama-tunnel-bg SSH_TARGET=<user>@<remote-host> REMOTE_OLLAMA_PORT=11434 OLLAMA_PORT=11435
 ```
 
 Then, in another terminal, run Navigator against the forwarded local port:
 
 ```
-$ conda activate <env-name>
-(<env-name>) $ make navigator OLLAMA_HOSTNAME=localhost OLLAMA_PORT=11435
+$ # Activate your environment first
+$ make navigator OLLAMA_HOSTNAME=localhost OLLAMA_PORT=11435
 ```
 
 Notes:
@@ -54,16 +56,17 @@ Notes:
 ### In a second terminal
 
 ```
-$ conda activate <env-name>
-(<env-name>) $ make ui
+$ # Activate your environment first
+$ make ui
 ```
 
 You will now be able to access the CORAS Navigator at `http://localhost:1235/`.
 
-If you want to exit, you can deactivate the virtual environment with:
+If you want to exit, deactivate your environment with the command that matches your setup:
 
 ```
-(<env-name>) $ conda deactivate 
+$ conda deactivate
+$ deactivate
 ``` 
 
 ## Help
@@ -79,8 +82,8 @@ $ make
 Run unit tests from the root of the project directory with:
 
 ```
-$ conda activate <env-name>
-(<env-name>) $ make test
+$ # Activate your environment first
+$ make test
 ```
 
 ## Dependencies

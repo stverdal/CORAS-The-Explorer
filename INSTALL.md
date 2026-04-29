@@ -18,11 +18,23 @@ $ conda create -n <env-name> python=3.12.10
 
 The environment name can be anything, e.g. `navigator.env`.
 
+## pip + venv
+
+If you prefer not to use Conda, create a local virtual environment with Python 3.12:
+
+```
+$ python3.12 -m venv .venv
+$ source .venv/bin/activate
+$ python -m pip install -U pip
+```
+
 ## Dependencies
 
-- You should have Ollama installed on your machine.
+- You should have Ollama available either on your machine or on a remote machine that you can reach through SSH port forwarding.
 
-- Install dependencies with:
+- You need Node.js and npm available to run the UI. In the Conda-based setup below, Node.js is installed with Conda. In the pip-only setup, install Node.js and npm with your system package manager before running `npm install`.
+
+- Install dependencies with Conda:
 
 ```
 $ conda activate <env-name>
@@ -40,9 +52,31 @@ $ conda activate <env-name>
 # User Interface
 (<env-name>) $ conda install conda-forge::nodejs
 (<env-name>) $ cd ui
-(<env-name>) $ npm i parcel react react-markdown remark-gfm@3.0.1 jspdf
+(<env-name>) $ npm install
 
 (<env-name>) $ conda deactivate
+```
+
+- Or install dependencies with pip only:
+
+```
+$ source .venv/bin/activate
+
+# Python dependencies
+(.venv) $ pip install \
+	ollama \
+	langchain \
+	langchain-community \
+	langchain-ollama \
+	faiss-cpu \
+	flask \
+	flask-cors \
+	requests \
+	pypdf
+
+# User Interface
+(.venv) $ cd ui
+(.venv) $ npm install
 ```
 
 ## Run
