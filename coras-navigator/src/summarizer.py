@@ -1,15 +1,9 @@
 from rag import DocumentExtension
 
 # LLM
-from langchain_ollama import ChatOllama, OllamaLLM
-from langchain_core.messages import AIMessage
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain_ollama import OllamaLLM
 # Prompt template
-from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
-# Import documents
-from langchain_community.document_loaders import PyPDFLoader
-# Summarize
-from langchain.chains.summarize import load_summarize_chain
+from langchain_core.prompts import ChatPromptTemplate
 
 class Summarizer:
     """

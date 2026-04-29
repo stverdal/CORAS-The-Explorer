@@ -48,3 +48,18 @@ $ conda activate <env-name>
 ## Run
 
 See `README.md`.
+
+### Remote Ollama (optional)
+
+To use Ollama running on another machine, SSH tunnel the remote Ollama port to a local port and run Navigator with that local port. Example:
+
+```
+$ make ollama-tunnel SSH_TARGET=<user>@<remote-host> REMOTE_OLLAMA_PORT=11434 OLLAMA_PORT=11435
+$ make navigator OLLAMA_HOSTNAME=localhost OLLAMA_PORT=11435
+```
+
+`make ollama-tunnel` stays attached in the foreground by design. To start the tunnel and return to your shell immediately, use:
+
+```
+$ make ollama-tunnel-bg SSH_TARGET=<user>@<remote-host> REMOTE_OLLAMA_PORT=11434 OLLAMA_PORT=11435
+```

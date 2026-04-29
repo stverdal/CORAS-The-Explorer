@@ -1,17 +1,9 @@
 # Load documents
 from langchain_core.documents import Document
-from langchain_community.document_loaders import CSVLoader
-# Split documents
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 # Vector Store
-import faiss
-from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores import FAISS
 # Models
 from langchain_ollama import ChatOllama, OllamaEmbeddings
-# Retrievers
-from langchain.retrievers import ContextualCompressionRetriever
-from langchain.retrievers.document_compressors import LLMChainExtractor
 
 from langchain_core.prompts import ChatPromptTemplate
 
