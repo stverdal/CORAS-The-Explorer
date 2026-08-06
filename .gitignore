@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+
+# 1. RAg Documents
+coras-navigator/rag-docs/*
+
+# 2. Without laws files
+!coras-navigator/rag-docs/laws_files/
+!coras-navigator/rag-docs/*-structured.json
+!coras-navigator/rag-docs/laws_contexts.json
+
+# Saved Vector Store
+coras-navigator/resource/vector-store
+coras-navigator/vector-stores/nvd/
+coras-navigator/vector-stores/capec/
+coras-navigator/vector-stores/compliance/
+coras-navigator/vector-stores/main/
+
+#CVE Database
+coras-navigator/rag-docs/NVD-*/
+coras-navigator/rag-docs/nvdcve-*.json
+
+
+# Virtual environment
+.env
+.venv
+
+# Generated output
+chats/
+.temp/
+
+# Files uploaded by users
+coras-navigator/uploaded-files/
+
+# Vim
+*.swn
+*.swo
+*.swp
+
+# UI
+ui/node_modules
+ui/.cache
+ui/dist/
+ui/.parcel-cache/
+
+node_modules
