@@ -1023,7 +1023,7 @@ class Navigator extends React.Component {
               </>
             )}
 
-            <div className="action-buttons">
+            {/* <div className="action-buttons">
               <button onClick={this.onDisplayContextButtonClick}>
                 {this.state.displayContext
                   ? "- Hide retrieved context"
@@ -1032,7 +1032,7 @@ class Navigator extends React.Component {
             </div>
             <pre className="generated-text">
               {this.state.displayContext ? this.state.retrievedContext : ""}
-            </pre>
+            </pre> */}
           </>
         )}
       </div>

@@ -130,7 +130,6 @@ def generate_risks():
             existing_tech_report=json_data.get('existing_tech_report', ''),
             existing_legal_report=json_data.get('existing_legal_report', '')
         )
-        print(results["final_analysis_for_coras"])
         return {
             'analysis': results["final_analysis_for_coras"],
             'technical_analysis': results["technical_report"],
@@ -153,7 +152,6 @@ def generate_coras_model():
         navigator = build_navigator_for_request(options)
         format_output = navigator.format(text=analysis_text, options=options)
         model = navigator.extract_json(format_output)
-        print(model)
         return {
             'coras_model': model
         }
@@ -176,7 +174,7 @@ if __name__ == '__main__':
         ])
 
     cve_rag.load_files([
-        ("./rag-docs/nvdcve-2.0-2026.json", DocumentExtension.JSON),
+        ("./rag-docs/nvdcve-2.0-2026.json", DocumentExtension.JSON),s
         ("./rag-docs/nvdcve-2.0-2025.json", DocumentExtension.JSON),
         ("./rag-docs/nvdcve-2.0-2024.json", DocumentExtension.JSON),
         ("./rag-docs/nvdcve-2.0-2023.json", DocumentExtension.JSON),
