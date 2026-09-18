@@ -396,6 +396,18 @@ class NVDRAG(RAG):
             "items": context_items
         }, llm=llm)]
 
+# Documents are tagged with the file they came from, so a metadata filter has to use
+# the filename rather than the law's short name. Note that the Cyber Resilience Act is
+# spelled differently in the option key and in the filename.
+LAW_SOURCE_FILES = {
+    "GDPR": "GDPR-structured.json",
+    "NIS2": "NIS2-structured.json",
+    "AI_Act": "AI_Act-structured.json",
+    "Cybersecurity_Act": "Cybersecurity_Act-structured.json",
+    "CyberResilience_Act": "Cyber_Resilience_Act-structured.json",
+}
+
+
 class ComplianceRAG(RAG):
     """
     RAG module for Legal and Compliance documents (GDPR, AI Act, NIS2, etc.)
@@ -429,10 +441,17 @@ class ComplianceRAG(RAG):
             if options.get("Cybersecurity_Act", False): active_laws.append("Cybersecurity_Act")
             if options.get("CyberResilience_Act", False): active_laws.append("CyberResilience_Act")
 
-            if len(active_laws) == 1:
-                search_filter = {"source": active_laws[0]}
-            elif len(active_laws) > 1:
-                search_filter = {"source": {"$in": active_laws}}
+            # Translate the option keys into the source filenames the documents carry.
+            # Filtering on the short names matched nothing, which silently emptied the
+            # legal context and left the diagram with no law vertices at all.
+            active_sources = [
+                LAW_SOURCE_FILES[law] for law in active_laws if law in LAW_SOURCE_FILES
+            ]
+
+            if len(active_sources) == 1:
+                search_filter = {"source": active_sources[0]}
+            elif len(active_sources) > 1:
+                search_filter = {"source": {"$in": active_sources}}
 
         raw_results = self.vector_store.similarity_search(query=query, k=k, filter=search_filter)
         filtered_results = self._filter_laws(query, raw_results, options, llm=llm)

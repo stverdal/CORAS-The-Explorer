@@ -342,6 +342,23 @@ def normalise_coras_model(model):
         and edge.get("target") in known_ids
     ]
 
+    # A vertex touched by no edge cannot be read as part of a CORAS chain, and the
+    # layout ranks nodes by their edges, so these pile up as a detached column beside
+    # the diagram. Drop them, but only when there is a graph left to attach to: if the
+    # model produced no usable edges at all, keep everything so the warning below
+    # reports the real problem instead of an empty diagram.
+    if kept_edges:
+        connected = {e["source"] for e in kept_edges} | {e["target"] for e in kept_edges}
+        orphans = [v for v in kept_vertices if v.get("id") not in connected]
+        if orphans:
+            print(
+                "[normalise] Dropped "
+                + str(len(orphans))
+                + " unconnected vertices: "
+                + ", ".join(f"{v.get('id')} ({v.get('type')})" for v in orphans)
+            )
+            kept_vertices = [v for v in kept_vertices if v.get("id") in connected]
+
     dropped_vertices = len(vertices) - len(kept_vertices)
     dropped_edges = len(edges) - len(kept_edges)
     if renamed or dropped_vertices or dropped_edges:
