@@ -284,6 +284,29 @@ def generate_coras_model():
         print(f"[Error generate_coras_model]: {e}")
         return {'error': str(e)}, 500
 
+def check_port_is_free(host: str, port: int):
+    """
+    Fails fast if something already listens on the API port.
+
+    Flask only binds after the vector stores are loaded, so without this a second
+    instance does all of that work before reporting the clash.
+    """
+
+    import socket
+
+    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    probe.settimeout(2)
+    try:
+        if probe.connect_ex(("127.0.0.1" if host == "0.0.0.0" else host, port)) == 0:
+            raise SystemExit(
+                f"\nPort {port} is already in use, most likely by another Navigator.\n"
+                f"Stop it, or pick a different port:\n"
+                f"  make navigator CORAS_API_PORT=<port>\n"
+            )
+    finally:
+        probe.close()
+
+
 def check_embedding_backend():
     """
     Fails fast if Ollama is unreachable or the embedding model is missing.
@@ -350,6 +373,7 @@ def load_all_vector_stores():
 
 
 if __name__ == '__main__':
+    check_port_is_free(API_HOST, API_PORT)
     load_all_vector_stores()
     print(f"Serving the Navigator API on http://{API_HOST}:{API_PORT}")
     app.run(debug=True, host=API_HOST, port=API_PORT, use_reloader=False)
