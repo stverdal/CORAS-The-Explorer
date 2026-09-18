@@ -581,6 +581,23 @@ class LegalAssessor:
     Agent responsible of generating textual legal slection and analysis.
     """
 
+    # Character budgets for the two large blocks in the assessment prompt. Roughly four
+    # characters per token, so this keeps the pair near 15k tokens with five laws
+    # selected, leaving room for the system description and the technical report.
+    LAW_CONTEXT_CHAR_BUDGET = 6000
+    LEGAL_CONTEXT_CHAR_BUDGET = 30000
+
+    # The UI sends CyberResilience_Act while laws_contexts.json keys it
+    # Cyber_Resilience_Act, so the act was silently excluded from every assessment.
+    LAW_OPTION_KEYS = {"Cyber_Resilience_Act": "CyberResilience_Act"}
+
+    def _is_law_selected(self, law: str, options: dict) -> bool:
+        """
+        Reports whether the user selected a law, tolerating the two spellings in use.
+        """
+
+        return bool(options.get(law) or options.get(self.LAW_OPTION_KEYS.get(law, law)))
+
     def __init__(self, llm):
         self.llm = llm
         self.global_contexts = self._load_global_contexts()
@@ -651,12 +668,44 @@ class LegalAssessor:
             raise ValueError("legal_context empty")
 
         SUPPORTED_LAWS = list(self.global_contexts.keys())
-        laws_involved = [law for law in SUPPORTED_LAWS if options.get(law)]
+        laws_involved = [law for law in SUPPORTED_LAWS if self._is_law_selected(law, options)]
 
+        # This block is background only: the prompt below restricts the assessment to
+        # the articles in <legal_context>, which is what the RAG actually retrieved.
+        # Left whole it is enormous - the five regulations together run to about
+        # 750,000 characters, far past any model's context window - so give each law a
+        # budget and let the retrieved articles carry the detail.
         dynamic_general_context = ""
         for law in laws_involved:
-            if law in self.global_contexts:
-                dynamic_general_context += f"--- CONTEXT FOR {law.upper()} ---\n{self.global_contexts[law]}\n\n"
+            if law not in self.global_contexts:
+                continue
+
+            context = self.global_contexts[law]
+            if not isinstance(context, str):
+                context = json.dumps(context)
+
+            if len(context) > self.LAW_CONTEXT_CHAR_BUDGET:
+                context = (
+                    context[: self.LAW_CONTEXT_CHAR_BUDGET]
+                    + "\n[... truncated: see <legal_context> for the relevant articles]"
+                )
+
+            dynamic_general_context += f"--- CONTEXT FOR {law.upper()} ---\n{context}\n\n"
+
+        if legal_context and len(legal_context) > self.LEGAL_CONTEXT_CHAR_BUDGET:
+            print(
+                f"[LegalAssessor] Retrieved articles trimmed from {len(legal_context)} "
+                f"to {self.LEGAL_CONTEXT_CHAR_BUDGET} characters."
+            )
+            legal_context = (
+                legal_context[: self.LEGAL_CONTEXT_CHAR_BUDGET] + "\n[... truncated]"
+            )
+
+        print(
+            f"[LegalAssessor] Prompt budget: {len(dynamic_general_context)} chars of "
+            f"law background across {len(laws_involved)} laws, "
+            f"{len(legal_context)} chars of retrieved articles."
+        )
 
         mode_instructions=[]
         if options.get("legal_first", False):
