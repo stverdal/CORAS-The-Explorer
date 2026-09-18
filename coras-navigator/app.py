@@ -37,6 +37,13 @@ DEFAULT_LLM_BASE_URL = os.environ.get("CORAS_LLM_BASE_URL", "").strip()
 # Never sent to the browser: used only when the request carries no key of its own.
 DEFAULT_LLM_API_KEY = os.environ.get("CORAS_LLM_API_KEY", "").strip()
 
+# Where the API binds. 0.0.0.0 exposes it beyond this machine, so the default stays
+# local and an SSH tunnel is the usual way in.
+EMBEDDING_MODEL = "nomic-embed-text"
+
+API_HOST = os.environ.get("CORAS_API_HOST", "").strip() or "127.0.0.1"
+API_PORT = int(os.environ.get("CORAS_API_PORT", "").strip() or "5242")
+
 # Which NVD years to embed into the CVE vector store. Each year is roughly 30-60k CVEs
 # and embedding is the slow part of the first start, so a smoke test wants one year:
 #   make navigator CORAS_NVD_YEARS=2026
@@ -277,6 +284,40 @@ def generate_coras_model():
         print(f"[Error generate_coras_model]: {e}")
         return {'error': str(e)}, 500
 
+def check_embedding_backend():
+    """
+    Fails fast if Ollama is unreachable or the embedding model is missing.
+
+    Retrieval embeddings always run on Ollama, whatever CORAS_LLM_PROVIDER is set to,
+    because no external chat provider serves embeddings and a vector store must be
+    queried with the model that built it. Loading a saved store does not embed
+    anything, so without this check an unreachable Ollama only surfaces much later,
+    as a failure in the middle of an analysis.
+    """
+
+    url = _ollama_url_from_env()
+    try:
+        response = requests.get(f"{url}/api/tags", timeout=10)
+        response.raise_for_status()
+        models = [m.get("name", "") for m in response.json().get("models", [])]
+    except Exception:
+        raise SystemExit(
+            f"\nOllama is not reachable at {url}.\n"
+            f"Embeddings always run on Ollama, even when generation uses another "
+            f"provider.\n"
+            f"Start Ollama, or point the Navigator at it:\n"
+            f"  make navigator OLLAMA_HOSTNAME=<host> OLLAMA_PORT=<port>\n"
+        )
+
+    if not any(m.startswith(EMBEDDING_MODEL) for m in models):
+        raise SystemExit(
+            f"\nOllama at {url} does not have the embedding model "
+            f"'{EMBEDDING_MODEL}'.\nRun: make pull-models\n"
+        )
+
+    print(f"Embedding backend ready: {EMBEDDING_MODEL} at {url}")
+
+
 def load_all_vector_stores():
     """
     Builds or loads every vector store the Navigator needs.
@@ -284,6 +325,8 @@ def load_all_vector_stores():
     Split out of __main__ so the stores can be built ahead of time by
     `make build-stores` without holding a web server open for hours.
     """
+
+    check_embedding_backend()
 
     capec_rag.load_files([(
         "./rag-docs/capec-abstract.txt",
@@ -308,11 +351,6 @@ def load_all_vector_stores():
 
 if __name__ == '__main__':
     load_all_vector_stores()
-    # 0.0.0.0 when the browser runs on a different machine than the server.
-    app.run(
-        debug=True,
-        host=os.environ.get("CORAS_API_HOST", "127.0.0.1"),
-        port=int(os.environ.get("CORAS_API_PORT", "5242")),
-        use_reloader=False,
-    )
+    print(f"Serving the Navigator API on http://{API_HOST}:{API_PORT}")
+    app.run(debug=True, host=API_HOST, port=API_PORT, use_reloader=False)
     
