@@ -1,6 +1,8 @@
 from flask import Flask, request
 from flask_cors import CORS
 import json
+import os
+import requests
 
 from summarizer import *
 from navigator import *
@@ -23,15 +25,131 @@ compliance_rag = ComplianceRAG(
     directory="./vector-stores/compliance/"
 )
 
+# Server-side defaults for the inference target. Each can be overridden per request
+# from the UI; these decide what the UI starts on and what is used when a field is
+# left blank. Set them in the environment, e.g.
+#   make navigator CORAS_LLM_PROVIDER=groq CORAS_LLM_MODEL=llama-3.3-70b-versatile
+# `or` rather than a get() default, so an exported-but-empty variable (which is what
+# `make navigator` passes when the user sets nothing) still falls back correctly.
+DEFAULT_LLM_PROVIDER = os.environ.get("CORAS_LLM_PROVIDER", "").strip() or "ollama"
+DEFAULT_LLM_MODEL = os.environ.get("CORAS_LLM_MODEL", "").strip() or "qwen2.5:72b"
+DEFAULT_LLM_BASE_URL = os.environ.get("CORAS_LLM_BASE_URL", "").strip()
+# Never sent to the browser: used only when the request carries no key of its own.
+DEFAULT_LLM_API_KEY = os.environ.get("CORAS_LLM_API_KEY", "").strip()
+
+# Which NVD years to embed into the CVE vector store. Each year is roughly 30-60k CVEs
+# and embedding is the slow part of the first start, so a smoke test wants one year:
+#   make navigator CORAS_NVD_YEARS=2026
+# Changing this list rebuilds the store automatically on the next start.
+NVD_YEARS = [
+    y.strip() for y in os.environ.get("CORAS_NVD_YEARS", "").split(",") if y.strip()
+] or ["2022", "2023", "2024", "2025", "2026"]
+
+
+def _ollama_url_from_env() -> str:
+    """
+    Builds the native Ollama URL from OLLAMA_HOST, which the Makefile sets from
+    OLLAMA_HOSTNAME/OLLAMA_PORT. This is what makes `make navigator OLLAMA_PORT=11435`
+    reach a tunnelled remote Ollama instead of the default local one.
+    """
+    host = os.environ.get("OLLAMA_HOST", "").strip()
+    if not host:
+        return "http://localhost:11434"
+    if not host.startswith(("http://", "https://")):
+        host = f"http://{host}"
+    return host.rstrip("/")
+
+
+@app.route('/coras_navigator_api/config', methods=["GET"])
+def get_config():
+    """
+    Reports the inference target the server was started with, so the UI can
+    pre-select it. The API key is deliberately excluded from this response.
+    """
+    return {
+        "llm_provider": DEFAULT_LLM_PROVIDER,
+        "llm_model": DEFAULT_LLM_MODEL,
+        "llm_base_url": DEFAULT_LLM_BASE_URL,
+        "server_api_key_configured": bool(DEFAULT_LLM_API_KEY),
+    }
+
+
+# Endpoints that serve an OpenAI-style /models listing.
+PROVIDER_API_ROOTS = {
+    "openai": "https://api.openai.com/v1",
+    "groq": "https://api.groq.com/openai/v1",
+}
+
+# Model families that cannot answer a chat completion, so they must not reach the
+# model dropdown: speech-to-text, text-to-speech, embeddings, moderation, image.
+NON_CHAT_MODEL_HINTS = (
+    "whisper", "tts", "embed", "guard", "moderation", "dall-e", "playai", "rerank", "sora",
+)
+
+
+def _is_chat_model(model_id: str) -> bool:
+    lowered = model_id.lower()
+    return not any(hint in lowered for hint in NON_CHAT_MODEL_HINTS)
+
+
+@app.route('/coras_navigator_api/models', methods=["POST"])
+def list_models():
+    """
+    Lists the models the configured provider actually offers, so the UI dropdown
+    reflects the live catalogue instead of a hardcoded list that silently rots.
+
+    The request may carry its own key; otherwise the server's key is used. The key is
+    read from the body rather than the query string so it stays out of access logs.
+    """
+    try:
+        options = request.get_json(silent=True) or {}
+        provider = (options.get("llm_provider") or DEFAULT_LLM_PROVIDER).strip()
+        api_key = (options.get("llm_api_key") or DEFAULT_LLM_API_KEY).strip()
+        base_url = (options.get("llm_base_url") or DEFAULT_LLM_BASE_URL).strip()
+
+        if provider == "ollama":
+            url = base_url or _ollama_url_from_env()
+            response = requests.get(f"{url.rstrip('/')}/api/tags", timeout=15)
+            response.raise_for_status()
+            models = [m["name"] for m in response.json().get("models", [])]
+        else:
+            url = PROVIDER_API_ROOTS.get(provider) or base_url
+            if not url:
+                return {"models": [], "error": "Set a base URL for this provider first."}
+            headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+            response = requests.get(f"{url.rstrip('/')}/models", headers=headers, timeout=15)
+            response.raise_for_status()
+            models = [m["id"] for m in response.json().get("data", [])]
+
+        return {"models": sorted(m for m in models if _is_chat_model(m))}
+
+    except requests.exceptions.HTTPError as error:
+        status = error.response.status_code
+        if status == 401:
+            message = "Invalid or missing API key."
+        elif status == 403:
+            message = "This key is not allowed to list models."
+        else:
+            message = f"Could not reach the provider (code {status})."
+        print(f"[Error list_models]: {status} - {error.response.text[:200]}")
+        return {"models": [], "error": message}
+    except Exception as error:
+        print(f"[Error list_models]: {error}")
+        return {"models": [], "error": "Could not reach the provider."}
+
+
 def get_llm_from_options(options: dict) -> LLMProvider:
     """
     Constructs the HTTP adapter based on the options sent by the frontend.
     API keys are stored in memory only for the duration of this request.
+
+    Any field the frontend leaves blank falls back to the corresponding
+    CORAS_LLM_* environment variable.
     """
-    provider = options.get("llm_provider", "ollama")
-    model_name = options.get("llm_model", "qwen2.5:72b").strip()
-    api_key = options.get("llm_api_key", "").strip()
-    base_url = options.get("llm_base_url", "").strip()
+    provider = (options.get("llm_provider") or DEFAULT_LLM_PROVIDER).strip()
+    model_name = (options.get("llm_model") or DEFAULT_LLM_MODEL).strip()
+    api_key = (options.get("llm_api_key") or DEFAULT_LLM_API_KEY).strip()
+    base_url = (options.get("llm_base_url") or DEFAULT_LLM_BASE_URL).strip()
 
     if provider == "openai":
         if not api_key:
@@ -61,7 +179,7 @@ def get_llm_from_options(options: dict) -> LLMProvider:
         )
 
     else:
-        url = base_url if base_url else "http://localhost:11434"
+        url = base_url if base_url else _ollama_url_from_env()
         return OllamaNativeAdapter(
             base_url=url, 
             model=model_name
@@ -159,7 +277,14 @@ def generate_coras_model():
         print(f"[Error generate_coras_model]: {e}")
         return {'error': str(e)}, 500
 
-if __name__ == '__main__': 
+def load_all_vector_stores():
+    """
+    Builds or loads every vector store the Navigator needs.
+
+    Split out of __main__ so the stores can be built ahead of time by
+    `make build-stores` without holding a web server open for hours.
+    """
+
     capec_rag.load_files([(
         "./rag-docs/capec-abstract.txt",
         DocumentExtension.TXT
@@ -173,13 +298,21 @@ if __name__ == '__main__':
         ("./rag-docs/Cybersecurity_Act-structured.json", DocumentExtension.JSON)
         ])
 
+    print(f"Loading NVD years: {', '.join(NVD_YEARS)}")
     cve_rag.load_files([
-        ("./rag-docs/nvdcve-2.0-2026.json", DocumentExtension.JSON),s
-        ("./rag-docs/nvdcve-2.0-2025.json", DocumentExtension.JSON),
-        ("./rag-docs/nvdcve-2.0-2024.json", DocumentExtension.JSON),
-        ("./rag-docs/nvdcve-2.0-2023.json", DocumentExtension.JSON),
-        ("./rag-docs/nvdcve-2.0-2022.json", DocumentExtension.JSON)
+        (f"./rag-docs/nvdcve-2.0-{year}.json", DocumentExtension.JSON)
+        for year in NVD_YEARS
     ])
+    print("All vector stores are ready.")
 
-    app.run(debug=True, port=5242)
+
+if __name__ == '__main__':
+    load_all_vector_stores()
+    # 0.0.0.0 when the browser runs on a different machine than the server.
+    app.run(
+        debug=True,
+        host=os.environ.get("CORAS_API_HOST", "127.0.0.1"),
+        port=int(os.environ.get("CORAS_API_PORT", "5242")),
+        use_reloader=False,
+    )
     

@@ -48,7 +48,10 @@ class CWE:
     RELATED_ATTACK_PATTERNS = 21
     NOTES = 22
 
-NAVIGATOR_DIR = "./coras-navigator/"
+import os as _os
+# Paths are anchored to this script's location so the make targets, a cron job and a
+# manual run from any directory all resolve the same files.
+NAVIGATOR_DIR = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))) + "/"
 
 def format_capec_document_row(row, ids) -> str:
     mitigations = list(filter(lambda x: x != '', row[Capec.MITIGATIONS].split("::")))

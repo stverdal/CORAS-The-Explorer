@@ -16,10 +16,12 @@ import ScopeSelector from "./ScopeSelector.jsx";
 import { naturalLanguageFromThreatModel } from "../Editor/DAG.js";
 
 import lawsData from "../../../../../../coras-navigator/rag-docs/laws_contexts.json";
-import { clickProps } from "react-native-web/dist/cjs/modules/forwardedProps/index.js";
 
-const CORAS_NAVIGATOR_IP = "localhost";
-const CORAS_NAVIGATOR_PORT = 5242;
+// Where the Navigator API lives. Parcel inlines these at build time, so point the UI
+// at a remote host by setting them before `make ui`:
+//   make ui CORAS_NAVIGATOR_IP=gpu-server.example.org
+const CORAS_NAVIGATOR_IP = process.env.CORAS_NAVIGATOR_IP || "localhost";
+const CORAS_NAVIGATOR_PORT = process.env.CORAS_NAVIGATOR_PORT || 5242;
 
 class Navigator extends React.Component {
   constructor(props) {
@@ -57,6 +59,10 @@ class Navigator extends React.Component {
       llmModel: "",
       llmApiKey: "",
       llmBaseUrl: "",
+      serverApiKeyConfigured: false,
+      availableModels: [],
+      modelsError: "",
+      modelsLoading: false,
 
       workflowSteps: [
         "1. Context",
@@ -128,11 +134,81 @@ class Navigator extends React.Component {
     this._isMounted = true;
     this.prevScrollY = window.scrollY;
     window.addEventListener("scroll", this.handleScroll);
+    this.loadServerConfig();
   }
+
+  // Pre-select whatever inference target the Navigator was started with, so a server
+  // launched with CORAS_LLM_PROVIDER=groq opens on Groq without touching the UI.
+  // The API key is never part of this response; the server keeps its own.
+  loadServerConfig = (attempt = 0) => {
+    fetch(
+      `http://${CORAS_NAVIGATOR_IP}:${CORAS_NAVIGATOR_PORT}/coras_navigator_api/config`,
+    )
+      .then((response) => (response.ok ? response.json() : null))
+      .then((config) => {
+        if (!config || !this._isMounted) return;
+        this.setState(
+          {
+            llmProvider: config.llm_provider || "ollama",
+            llmModel: config.llm_model || "",
+            llmBaseUrl: config.llm_base_url || "",
+            serverApiKeyConfigured: !!config.server_api_key_configured,
+          },
+          this.fetchAvailableModels,
+        );
+      })
+      .catch(() => {
+        // The Navigator spends several minutes embedding documents on a cold start,
+        // so retry for a while instead of silently falling back to the defaults.
+        if (!this._isMounted || attempt >= 40) return;
+        this.configRetryTimer = setTimeout(
+          () => this.loadServerConfig(attempt + 1),
+          5000,
+        );
+      });
+  };
+
+  // Ask the Navigator what the selected provider actually offers, so the model list
+  // reflects the live catalogue rather than a hardcoded list that goes stale as
+  // providers retire models.
+  fetchAvailableModels = () => {
+    this.setState({ modelsLoading: true, modelsError: "" });
+    fetch(
+      `http://${CORAS_NAVIGATOR_IP}:${CORAS_NAVIGATOR_PORT}/coras_navigator_api/models`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          llm_provider: this.state.llmProvider,
+          llm_api_key: this.state.llmApiKey,
+          llm_base_url: this.state.llmBaseUrl,
+        }),
+      },
+    )
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!this._isMounted) return;
+        if (!data) {
+          this.setState({ modelsLoading: false, modelsError: "Navigator unreachable." });
+          return;
+        }
+        this.setState({
+          availableModels: data.models || [],
+          modelsError: data.error || "",
+          modelsLoading: false,
+        });
+      })
+      .catch(() => {
+        if (!this._isMounted) return;
+        this.setState({ modelsLoading: false, modelsError: "Navigator unreachable." });
+      });
+  };
 
   componentWillUnmount() {
     this.abortController.abort();
     this._isMounted = false;
+    clearTimeout(this.modelRefreshTimer);
+    clearTimeout(this.configRetryTimer);
     window.removeEventListener("scroll", this.handleScroll);
   }
 
@@ -348,9 +424,21 @@ class Navigator extends React.Component {
   handleLlmSettingChange = (event) => {
     const { name, value } = event.target;
     if (name === "llmProvider") {
-      this.setState({
-        [name]: value,
-        llmModel: "",
+      // Switching provider invalidates both the chosen model and the cached list.
+      this.setState(
+        {
+          [name]: value,
+          llmModel: "",
+          availableModels: [],
+          modelsError: "",
+        },
+        this.fetchAvailableModels,
+      );
+    } else if (name === "llmApiKey" || name === "llmBaseUrl") {
+      // A different key or endpoint can expose a different catalogue.
+      this.setState({ [name]: value }, () => {
+        clearTimeout(this.modelRefreshTimer);
+        this.modelRefreshTimer = setTimeout(this.fetchAvailableModels, 600);
       });
     } else {
       this.setState({
@@ -1091,7 +1179,13 @@ class Navigator extends React.Component {
       custom_openai_compatible: [],
     };
 
-    const currentSuggestions = modelSuggestions[this.state.llmProvider] || [];
+    // The live catalogue from the provider wins; the hardcoded list is only a
+    // fallback for when the Navigator or the provider cannot be reached.
+    const liveModels = this.state.availableModels;
+    const currentSuggestions =
+      liveModels.length > 0
+        ? liveModels
+        : modelSuggestions[this.state.llmProvider] || [];
     if (this.state.isBlankEditorMode) {
       return (
         <div id="coras-navigator">
@@ -1204,13 +1298,48 @@ class Navigator extends React.Component {
               </div>
 
               <div className="input-group">
-                <label>Model Name</label>
+                <label>
+                  Model Name
+                  <button
+                    type="button"
+                    className="refresh-models-btn"
+                    onClick={this.fetchAvailableModels}
+                    disabled={this.state.modelsLoading}
+                    title="Reload the model list from the provider"
+                  >
+                    {this.state.modelsLoading ? "Loading…" : "Refresh"}
+                  </button>
+                </label>
+
+                {liveModels.length > 0 && (
+                  <select
+                    name="llmModel"
+                    value={
+                      liveModels.includes(this.state.llmModel)
+                        ? this.state.llmModel
+                        : ""
+                    }
+                    onChange={this.handleLlmSettingChange}
+                  >
+                    <option value="">— select a model —</option>
+                    {liveModels.map((modelName) => (
+                      <option key={modelName} value={modelName}>
+                        {modelName}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
                 <input
                   type="text"
                   name="llmModel"
                   value={this.state.llmModel}
                   onChange={this.handleLlmSettingChange}
-                  placeholder="e.g., gpt-4o, llama-3.3-70b-versatile, qwen2.5:72b"
+                  placeholder={
+                    liveModels.length > 0
+                      ? "or type a model name"
+                      : "e.g., gpt-4o, qwen2.5:72b"
+                  }
                   list="model-suggestions"
                 />
 
@@ -1219,6 +1348,17 @@ class Navigator extends React.Component {
                     <option key={modelName} value={modelName} />
                   ))}
                 </datalist>
+
+                {this.state.modelsError && (
+                  <p className="models-hint models-hint-error">
+                    {this.state.modelsError}
+                  </p>
+                )}
+                {!this.state.modelsError && liveModels.length > 0 && (
+                  <p className="models-hint">
+                    {liveModels.length} models available from this provider.
+                  </p>
+                )}
               </div>
 
               {this.state.llmProvider !== "ollama" && (
@@ -1229,7 +1369,11 @@ class Navigator extends React.Component {
                     name="llmApiKey"
                     value={this.state.llmApiKey}
                     onChange={this.handleLlmSettingChange}
-                    placeholder="sk-..."
+                    placeholder={
+                      this.state.serverApiKeyConfigured
+                        ? "Using the key configured on the server"
+                        : "sk-..."
+                    }
                     autoComplete="off"
                   />
                 </div>

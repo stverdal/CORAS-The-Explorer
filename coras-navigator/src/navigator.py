@@ -1,4 +1,5 @@
 import json
+import re
 
 from summarizer import *
 from rag import *
@@ -29,6 +30,7 @@ class CorasNavigator:
 
     def __init__(self, summarizer: Summarizer, capec_rag: RAG, cve_rag: RAG, compliance_rag: RAG, tech_assesor : TechnicalAssesor, legal_assessor: LegalAssessor, formatter: Formatter):
         self.summarizer = summarizer
+        self.llm = tech_assesor.llm
         self.capec_rag = capec_rag
         self.cve_rag = cve_rag
         self.compliance_rag = compliance_rag
@@ -109,8 +111,8 @@ class CorasNavigator:
 
         print("--- GENERATING GLOBAL TECH CONTEXT (For Lateral Movement & Deep Flaws) ---")
         tech_keywords = self.tech_assesor.describe_for_tech_from_scope(text, scope)
-        global_capec = self.capec_rag.search(query=tech_keywords, k=10)
-        global_cve = self.cve_rag.search(query=tech_keywords, k=10)
+        global_capec = self.capec_rag.search(query=tech_keywords, k=10, llm=self.llm)
+        global_cve = self.cve_rag.search(query=tech_keywords, k=10, llm=self.llm)
         global_tech_context = "\n".join(global_capec + global_cve)
 
         if threats and not assets:
@@ -118,7 +120,7 @@ class CorasNavigator:
             isolated_paths = []
             for threat in threats:
                 search_query = f"Initial access vectors for threat actor '{threat.get('title')}' targeting system with: {tech_keywords}"
-                raw_capec = self.capec_rag.search(query=search_query, k=2)
+                raw_capec = self.capec_rag.search(query=search_query, k=2, llm=self.llm)
 
                 combined_context = f"--- INITIAL ACCESS VULNERABILITIES ---\n{chr(10).join(raw_capec)}\n\n--- INTERNAL SYSTEM VULNERABILITIES (LATERAL MOVEMENT) ---\n{global_tech_context}"
                 
@@ -143,7 +145,7 @@ class CorasNavigator:
             isolated_paths = []
             for asset in assets:
                 search_query = f"Vulnerabilities and threat scenarios to compromise asset '{asset.get('title')}' in a system containing: {tech_keywords}"
-                raw_capec = self.capec_rag.search(query=search_query, k=2)
+                raw_capec = self.capec_rag.search(query=search_query, k=2, llm=self.llm)
 
                 combined_context = f"--- ASSET-SPECIFIC VULNERABILITIES ---\n{chr(10).join(raw_capec)}\n\n--- INTERNAL SYSTEM VULNERABILITIES (LATERAL MOVEMENT) ---\n{global_tech_context}"
                 
@@ -169,8 +171,8 @@ class CorasNavigator:
             for threat in threats:
                 print(f"\nFinding initial vulnerabilities for : {threat.get('title')}")
                 search_query = f"Initial attack vectors for '{threat.get('title')}' against technical components: {tech_keywords}"                
-                raw_capec = self.capec_rag.search(query=search_query, k=3)
-                raw_cve = self.cve_rag.search(query=search_query, k = 3)
+                raw_capec = self.capec_rag.search(query=search_query, k=3, llm=self.llm)
+                raw_cve = self.cve_rag.search(query=search_query, k = 3, llm=self.llm)
                 tech_context = raw_capec + raw_cve
                 
                 combined_context = f"--- THREAT INITIAL ACCESS ---\n{chr(10).join(tech_context)}\n\n--- INTERNAL SYSTEM VULNERABILITIES (LATERAL MOVEMENT) ---\n{global_tech_context}"
@@ -225,7 +227,7 @@ class CorasNavigator:
                     search_query = self.tech_assesor.describe_for_legal(text, previous_report)
                 else:
                     search_query = self.legal_assessor.describe_for_legal(text)                
-            legal_context = self.compliance_rag.search(search_query, options=options)
+            legal_context = self.compliance_rag.search(search_query, options=options, llm=self.llm)
 
         print("Generating the legal report...")
         return self.legal_assessor.assess(
@@ -239,15 +241,145 @@ class CorasNavigator:
         return self.formatter.format(text, options)
 
     def extract_json(self, text: str) -> str:
-        try:
-            json = extract_JSON(text)
-            return json
-        except ValueError as error:
-            # No JSON found
-            return ""
-        except Exception as exception:
-            # Invalid JSON
-            return ""
+        """
+        Parses and validates the model returned by the formatter.
+
+        Failures are raised rather than turned into an empty string: a blank model is
+        indistinguishable on the canvas from a model that simply has no links, which
+        hides the real cause from the user.
+        """
+
+        model = extract_JSON(text)
+        return normalise_coras_model(model)
+
+# The vertex types the editor can draw. Anything else has no shape and is dropped
+# silently by the canvas, which also orphans every edge attached to it.
+ALLOWED_VERTEX_TYPES = {
+    "threat_scenario",
+    "unwanted_incident",
+    "human_threat_non_malicious",
+    "human_threat_malicious",
+    "non_human_threat",
+    "asset",
+    "mitigation",
+    "law",
+}
+
+# Types models invent despite the prompt, mapped onto the ones the editor knows.
+VERTEX_TYPE_ALIASES = {
+    "threat_source": "human_threat_malicious",
+    "threat": "human_threat_malicious",
+    "attacker": "human_threat_malicious",
+    "human_threat": "human_threat_malicious",
+    "malicious_human_threat": "human_threat_malicious",
+    "deliberate_human_threat": "human_threat_malicious",
+    "non_malicious_human_threat": "human_threat_non_malicious",
+    "accidental_human_threat": "human_threat_non_malicious",
+    "nonhuman_threat": "non_human_threat",
+    "risk": "unwanted_incident",
+    "incident": "unwanted_incident",
+    "unwanted_event": "unwanted_incident",
+    "treatment": "mitigation",
+    "control": "mitigation",
+    "countermeasure": "mitigation",
+    "direct_asset": "asset",
+    "indirect_asset": "asset",
+    "impacted_asset": "asset",
+    "legal": "law",
+    "regulation": "law",
+}
+
+
+def normalise_coras_model(model):
+    """
+    Makes a generated CORAS model drawable.
+
+    The canvas drops any vertex whose type it has no shape for, and a link whose
+    endpoint is missing renders as nothing. Because the layout ranks nodes by their
+    edges, losing the edges collapses the whole diagram into a single column. This
+    maps invented types back onto real ones, discards what cannot be mapped, and then
+    removes edges that no longer have both endpoints.
+
+    Parameters:
+    - model: The parsed model, expected to hold "vertices" and "edges"
+
+    Returns:
+    - The model, corrected in place
+    """
+
+    if not isinstance(model, dict):
+        return model
+
+    vertices = model.get("vertices")
+    edges = model.get("edges")
+    if not isinstance(vertices, list) or not isinstance(edges, list):
+        raise Exception(
+            "The model did not contain both a 'vertices' and an 'edges' list."
+        )
+
+    kept_vertices = []
+    renamed = 0
+    for vertex in vertices:
+        if not isinstance(vertex, dict):
+            continue
+        vertex_type = str(vertex.get("type", "")).strip().lower()
+        if vertex_type not in ALLOWED_VERTEX_TYPES:
+            alias = VERTEX_TYPE_ALIASES.get(vertex_type)
+            if alias is None:
+                print(f"[normalise] Dropped vertex of unusable type '{vertex_type}'")
+                continue
+            vertex["type"] = alias
+            renamed += 1
+        else:
+            vertex["type"] = vertex_type
+        kept_vertices.append(vertex)
+
+    known_ids = {v.get("id") for v in kept_vertices}
+    kept_edges = [
+        edge for edge in edges
+        if isinstance(edge, dict)
+        and edge.get("source") in known_ids
+        and edge.get("target") in known_ids
+    ]
+
+    dropped_vertices = len(vertices) - len(kept_vertices)
+    dropped_edges = len(edges) - len(kept_edges)
+    if renamed or dropped_vertices or dropped_edges:
+        print(
+            f"[normalise] {renamed} vertex types corrected, "
+            f"{dropped_vertices} vertices and {dropped_edges} edges dropped"
+        )
+
+    if kept_vertices and not kept_edges:
+        print(
+            "[normalise] WARNING: the model has no usable edges, so the diagram "
+            "will render as a single column of unconnected nodes."
+        )
+
+    model["vertices"] = kept_vertices
+    model["edges"] = kept_edges
+    return model
+
+
+def repair_JSON_text(text: str) -> str:
+    """
+    Repairs the two malformations language models produce most often when asked for
+    JSON: a trailing comma before a closing bracket, and a missing comma between two
+    adjacent objects in an array.
+
+    Parameters:
+    - text: The candidate JSON text
+
+    Returns:
+    - The text with those defects corrected
+    """
+
+    # } { or } \n { with no comma between them
+    text = re.sub(r'\}(\s*)\{', r'},\1{', text)
+    # a comma directly before a closing bracket
+    text = re.sub(r',(\s*[\]\}])', r'\1', text)
+    return text
+
 
 def extract_JSON(text: str):
     try:
@@ -255,10 +387,19 @@ def extract_JSON(text: str):
         end = text.rindex('}')
     except ValueError as error:
         raise ValueError("No JSON object found") from error
-       
+
+    candidate = text[start:end + 1]
+
     try:
-        json_object = json.loads(text[start:end+1])
+        return json.loads(candidate)
+    except ValueError:
+        pass
+
+    # Models routinely emit trailing commas and drop separators. Rather than lose the
+    # whole analysis to a stray character, repair the usual suspects and retry.
+    try:
+        json_object = json.loads(repair_JSON_text(candidate))
+        print("[extract_JSON] Recovered a malformed JSON response by repairing it.")
+        return json_object
     except ValueError as error:
         raise Exception("Invalid JSON") from error
-
-    return json_object

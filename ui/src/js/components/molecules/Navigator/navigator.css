@@ -545,3 +545,29 @@ p.file-name {
     box-sizing: border-box;
   }
 }
+
+/* Live model list in the LLM settings modal */
+.refresh-models-btn {
+  float: right;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.5rem;
+  cursor: pointer;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  background: #f5f5f5;
+}
+
+.refresh-models-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.models-hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.models-hint-error {
+  color: #b00020;
+}

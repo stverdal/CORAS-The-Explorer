@@ -5,7 +5,10 @@ import glob
 import requests
 from bs4 import BeautifulSoup
 
-NAVIGATOR_DIR = "./"
+import os as _os
+# Paths are anchored to this script's location so the make targets, a cron job and a
+# manual run from any directory all resolve the same files.
+NAVIGATOR_DIR = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))) + "/"
 RAG_DOCS_DIR = f"{NAVIGATOR_DIR}rag-docs/"
 LAWS_DOCS_DIR = f"{RAG_DOCS_DIR}laws_files/"
 

@@ -52,49 +52,57 @@
       "url": "https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-2019.json.zip",
       "zip_filename": "nvdcve-2.0-2019.json.zip",
       "original_filename": "nvdcve-2.0-2019.json",
-      "final_filename": "nvdcve-2.0-2019.json"
+      "final_filename": "nvdcve-2.0-2019.json",
+      "subdirectory": "NVD-2019-2026/"
     },
     {
       "url": "https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-2020.json.zip",
       "zip_filename": "nvdcve-2.0-2020.json.zip",
       "original_filename": "nvdcve-2.0-2020.json",
-      "final_filename": "nvdcve-2.0-2020.json"
+      "final_filename": "nvdcve-2.0-2020.json",
+      "subdirectory": "NVD-2019-2026/"
     },
     {
       "url": "https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-2021.json.zip",
       "zip_filename": "nvdcve-2.0-2021.json.zip",
       "original_filename": "nvdcve-2.0-2021.json",
-      "final_filename": "nvdcve-2.0-2021.json"
+      "final_filename": "nvdcve-2.0-2021.json",
+      "subdirectory": "NVD-2019-2026/"
     },
     {
       "url": "https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-2022.json.zip",
       "zip_filename": "nvdcve-2.0-2022.json.zip",
       "original_filename": "nvdcve-2.0-2022.json",
-      "final_filename": "nvdcve-2.0-2022.json"
+      "final_filename": "nvdcve-2.0-2022.json",
+      "subdirectory": "NVD-2019-2026/"
     },
     {
       "url": "https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-2023.json.zip",
       "zip_filename": "nvdcve-2.0-2023.json.zip",
       "original_filename": "nvdcve-2.0-2023.json",
-      "final_filename": "nvdcve-2.0-2023.json"
+      "final_filename": "nvdcve-2.0-2023.json",
+      "subdirectory": "NVD-2019-2026/"
     },
     {
       "url": "https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-2024.json.zip",
       "zip_filename": "nvdcve-2.0-2024.json.zip",
       "original_filename": "nvdcve-2.0-2024.json",
-      "final_filename": "nvdcve-2.0-2024.json"
+      "final_filename": "nvdcve-2.0-2024.json",
+      "subdirectory": "NVD-2019-2026/"
     },
     {
       "url": "https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-2025.json.zip",
       "zip_filename": "nvdcve-2.0-2025.json.zip",
       "original_filename": "nvdcve-2.0-2025.json",
-      "final_filename": "nvdcve-2.0-2025.json"
+      "final_filename": "nvdcve-2.0-2025.json",
+      "subdirectory": "NVD-2019-2026/"
     },
     {
       "url": "https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-2026.json.zip",
       "zip_filename": "nvdcve-2.0-2026.json.zip",
       "original_filename": "nvdcve-2.0-2026.json",
-      "final_filename": "nvdcve-2.0-2026.json"
+      "final_filename": "nvdcve-2.0-2026.json",
+      "subdirectory": "NVD-2019-2026/"
     }
   ]
 }

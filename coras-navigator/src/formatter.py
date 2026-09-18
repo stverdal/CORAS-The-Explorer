@@ -140,14 +140,14 @@ class SimpleJSONFormatter(Formatter):
                 { "type": "unwanted_incident", "id": "UI1", "text": "Data Breach" },
                 { "type": "asset", "id": "A1", "text": "Patient Database" },
                 { "type": "law", "id": "L1", "text": "GDPR Article 32\\n The system, which monitors and transmits patient data, must ensure the security and integrity of this data to prevent unauthorized access or breaches." },
-                { "type": "mitigation", "id": "M1", "text": "Use secure communication channels and protocols", },
+                { "type": "mitigation", "id": "M1", "text": "Use secure communication channels and protocols" }
                 ],
             "edges": [
                 { "source": "T1", "target": "TS1", "vulnerabilities": ["CWE-290"] },
                 { "source": "TS1", "target": "UI1", "vulnerabilities": [] },
                 { "source": "UI1", "target": "A1", "vulnerabilities": [] },
-                { "source": "UI1", "target": "L1", "vulnerabilities": [] }
-                { "source": "M1", "target": "TS1", "vulnerabilities": [] },
+                { "source": "UI1", "target": "L1", "vulnerabilities": [] },
+                { "source": "M1", "target": "TS1", "vulnerabilities": [] }
             ]
             }
             """
@@ -165,13 +165,13 @@ class SimpleJSONFormatter(Formatter):
                 { "type": "threat_scenario", "id": "TS1", "text": "The attacker exploits an authentication bypass vulnerability to inject the wearable sensor with malicious firmware." },
                 { "type": "unwanted_incident", "id": "UI1", "text": "Data Breach" },
                 { "type": "asset", "id": "A1", "text": "Patient Database" },
-                { "type": "mitigation", "id": "M1", "text": "Use secure communication channels and protocols", },
+                { "type": "mitigation", "id": "M1", "text": "Use secure communication channels and protocols" }
                 ],
             "edges": [
                 { "source": "T1", "target": "TS1", "vulnerabilities": ["CWE-290"] },
                 { "source": "TS1", "target": "UI1", "vulnerabilities": [] },
                 { "source": "UI1", "target": "A1", "vulnerabilities": [] },
-                { "source": "M1", "target": "TS1", "vulnerabilities": [] },
+                { "source": "M1", "target": "TS1", "vulnerabilities": [] }
                 ]
             }
             """

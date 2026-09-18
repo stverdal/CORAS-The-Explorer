@@ -3,8 +3,13 @@ import zipfile
 import os
 import json
 
-TEMP_DIR = "./coras-navigator/.temp/"
-RAG_DOCS_DIR = "./coras-navigator/rag-docs/"
+import os as _os
+# Paths are anchored to this script's location so the make targets, a cron job and a
+# manual run from any directory all resolve the same files.
+NAVIGATOR_DIR = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))) + "/"
+TEMP_DIR = f"{NAVIGATOR_DIR}.temp/"
+RAG_DOCS_DIR = f"{NAVIGATOR_DIR}rag-docs/"
+SOURCES_FILE = f"{NAVIGATOR_DIR}resource/rag-sources.json"
 
 def create_temp_directory():
     if not os.path.exists(TEMP_DIR):
@@ -37,17 +42,24 @@ def rename(filename: str, new_filename: str):
     os.rename(filename, new_filename)
 
 def download_rag_docs():
-    json = get_json_from_file("./coras-navigator/resource/rag-sources.json")
-    
-    for source in json["zip_sources"]: 
-        if os.path.exists(f"{RAG_DOCS_DIR}{source['final_filename']}"):
-            print(f"File {RAG_DOCS_DIR}{source['final_filename']} already exists.\n***") 
-            continue       
- 
+    json = get_json_from_file(SOURCES_FILE)
+
+    for source in json["zip_sources"]:
+        # NVD feeds land in their own subdirectory because the pruning step reads raw
+        # feeds from there and writes the pruned files back into rag-docs/. Keeping
+        # them apart means neither step can consume its own output.
+        target_dir = f"{RAG_DOCS_DIR}{source.get('subdirectory', '')}"
+        os.makedirs(target_dir, exist_ok=True)
+
+        final_path = f"{target_dir}{source['final_filename']}"
+        if os.path.exists(final_path):
+            print(f"File {final_path} already exists.\n***")
+            continue
+
         download(source['url'], f"{TEMP_DIR}{source['zip_filename']}")
-        extract(f"{TEMP_DIR}{source['zip_filename']}", RAG_DOCS_DIR)
+        extract(f"{TEMP_DIR}{source['zip_filename']}", target_dir)
         delete(f"{TEMP_DIR}{source['zip_filename']}")
-        rename(f"{RAG_DOCS_DIR}{source['original_filename']}", f"{RAG_DOCS_DIR}{source['final_filename']}")
+        rename(f"{target_dir}{source['original_filename']}", final_path)
         print("***")
 
 if __name__ == "__main__":

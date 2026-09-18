@@ -50,6 +50,83 @@ class RAG:
 
         raise Exception("Invalid class: search() not implemented")
     
+    # nomic-embed-text holds 2048 tokens. At roughly 4 characters per token that is
+    # about 8,000 characters; 6,000 leaves headroom for dense legal and technical text,
+    # which tokenises worse than prose.
+    EMBEDDING_MAX_CHARS = 6000
+
+    def _split_oversized_documents(self, documents: list[Document]) -> list[Document]:
+        """
+        Splits documents too long for the embedding model's context window.
+
+        Several EU law articles run past 17,000 characters as a single document, which
+        Ollama rejects outright with "input length exceeds the context length". Splitting
+        on the nearest paragraph, sentence or word boundary keeps each chunk embeddable
+        without dropping any text.
+
+        Parameters:
+        - documents: The documents to check
+
+        Returns:
+        - The documents, with oversized ones replaced by their chunks
+        """
+
+        result = []
+        for doc in documents:
+            text = doc.page_content
+            if len(text) <= self.EMBEDDING_MAX_CHARS:
+                result.append(doc)
+                continue
+
+            chunks = []
+            start = 0
+            while start < len(text):
+                end = min(start + self.EMBEDDING_MAX_CHARS, len(text))
+                if end < len(text):
+                    for separator in ("\n\n", "\n", ". ", " "):
+                        boundary = text.rfind(separator, start + self.EMBEDDING_MAX_CHARS // 2, end)
+                        if boundary != -1:
+                            end = boundary + len(separator)
+                            break
+                chunks.append(text[start:end])
+                start = end
+
+            for index, chunk in enumerate(chunks, start=1):
+                metadata = dict(doc.metadata)
+                metadata["chunk"] = f"{index}/{len(chunks)}"
+                result.append(Document(page_content=chunk, metadata=metadata))
+
+            print(f"  Split an oversized document ({len(text)} chars) into {len(chunks)} chunks")
+
+        return result
+
+    def _invoke_llm(self, prompt: ChatPromptTemplate, variables: dict, llm=None) -> str:
+        """
+        Runs a prompt against the LLM selected for the current request.
+
+        When `llm` is an LLMProvider adapter (OpenAI, Groq, a custom OpenAI-compatible
+        endpoint, or native Ollama), the prompt is rendered and sent through it. When it
+        is None, the module falls back to `self.llm`, the local ChatOllama instance, so
+        existing local-only setups behave exactly as before.
+
+        Parameters:
+        - prompt:    The ChatPromptTemplate to render
+        - variables: The values to interpolate into the template
+        - llm:       Optional LLMProvider adapter for this request
+
+        Returns:
+        - The model response as plain text
+        """
+
+        if llm is not None and hasattr(llm, "chat"):
+            rendered = prompt.format_messages(**variables)
+            system = "\n\n".join(m.content for m in rendered if m.type == "system")
+            user = [{"role": "user", "content": m.content} for m in rendered if m.type != "system"]
+            return llm.chat(messages=user, system=system or None)
+
+        chain = prompt | self.llm | StrOutputParser()
+        return chain.invoke(variables)
+
     def load_files(self, files: list[(str, DocumentExtension)]) -> None:
         """
         Loads files to be used as sources for retrieval. If the saved vector store contained the same files, it is simply loaded from local storage. Otherwise, the vector store is created.
@@ -77,6 +154,8 @@ class RAG:
         documents = []
         for path, extension in files:
             documents.extend(self._get_documents_from_file(path, extension))
+
+        documents = self._split_oversized_documents(documents)
 
         self.vector_store = Chroma.from_documents(
             documents=documents,
@@ -168,7 +247,7 @@ class CapecRAG(RAG):
 
         return capec_dict   
 
-    def search(self, query, k=6):
+    def search(self, query, k=6, llm=None):
         """
         Search and retrieves capec context from the vector store based on user query.
 
@@ -202,13 +281,10 @@ class CapecRAG(RAG):
             ("system", system_prompt),
             ("human", human_prompt)
         ])
-        chain = prompt | self.llm
-        result = chain.invoke({
+        return [self._invoke_llm(prompt, {
             "context": query,
             "items": complete_results
-        })
-
-        return [result.content]
+        }, llm=llm)]
 
 class NVDRAG(RAG):    
     """
@@ -264,7 +340,7 @@ class NVDRAG(RAG):
         print(f"NVD File '{path}' loaded ({len(documents)} vulnerabilities extracted).")
         return documents
 
-    def search(self, query: str, k: int=6) -> list[str]:
+    def search(self, query: str, k: int=6, llm=None) -> list[str]:
         """
         Search and retrieves CVEs context from the vector store based on user query.
 
@@ -315,12 +391,10 @@ class NVDRAG(RAG):
             ("human", human_prompt)
         ])
         
-        chain = prompt | self.llm
-        result = chain.invoke({
+        return [self._invoke_llm(prompt, {
             "context": query,
             "items": context_items
-        })
-        return [result.content]
+        }, llm=llm)]
 
 class ComplianceRAG(RAG):
     """
@@ -333,7 +407,7 @@ class ComplianceRAG(RAG):
         self.directory = directory
         self.llm = ChatOllama(model="llama3.1:8b", temperature=0)
 
-    def search(self, query: str, k: int=20, options: dict=None) -> str:
+    def search(self, query: str, k: int=20, options: dict=None, llm=None) -> str:
         """
         Search and retrieves articles context from the vector store based on user query.
 
@@ -361,7 +435,7 @@ class ComplianceRAG(RAG):
                 search_filter = {"source": {"$in": active_laws}}
 
         raw_results = self.vector_store.similarity_search(query=query, k=k, filter=search_filter)
-        filtered_results = self._filter_laws(query, raw_results, options)
+        filtered_results = self._filter_laws(query, raw_results, options, llm=llm)
         
         context_items = ""
         for i, res in enumerate(filtered_results, 1):
@@ -453,7 +527,7 @@ class ComplianceRAG(RAG):
     #             valid_laws.append(raw_results[idx])
     #     return valid_laws
 
-    def _filter_laws(self, system_description: str, raw_results: list, options: dict = None) -> list:
+    def _filter_laws(self, system_description: str, raw_results: list, options: dict = None, llm=None) -> list:
         """
         A filter to keep only that are really revelant to the system description or targeted assets.
         """
@@ -510,13 +584,11 @@ class ComplianceRAG(RAG):
         <result>0, 3</result>
         """)
         
-        filter_chain = filter_prompt | self.llm | StrOutputParser()
-        
-        llm_response = filter_chain.invoke({
+        llm_response = self._invoke_llm(filter_prompt, {
             "description": system_description,
             "articles": articles_text,
             "assets_instruction": assets_instruction
-        })
+        }, llm=llm)
         
         result_tags = re.findall(r'<result>(.*?)</result>', llm_response, re.DOTALL | re.IGNORECASE)
         
