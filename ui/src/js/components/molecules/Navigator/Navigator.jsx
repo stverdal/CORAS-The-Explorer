@@ -819,6 +819,7 @@ class Navigator extends React.Component {
       })
       .then((response_json) => {
         let generatedModel = null;
+        let failureMessage = null;
 
         try {
           let corasData = response_json["coras_model"];
@@ -835,12 +836,20 @@ class Navigator extends React.Component {
 
           this.editorRef.current.changeGraph("threat");
           generatedModel = this.editorRef.current.changeGraphFromDAG(corasData);
+          failureMessage = null;
         } catch (err) {
+          // Silently swallowing this left the user with an empty canvas and no reason
+          // for it. Surface it instead; the console still carries the stack.
           console.error("critical error during formating:", err);
+          failureMessage =
+            "The diagram could not be drawn: " +
+            (err && err.message ? err.message : "unknown error") +
+            ". See the browser console for details.";
         }
 
         this.setState({
-          displayModelStatusMessage: false,
+          displayModelStatusMessage: failureMessage !== null,
+          modelStatusMessage: failureMessage || this.state.modelStatusMessage,
           loading: false,
           unlockedStep: Math.max(this.state.unlockedStep, 5),
           generatedModel: generatedModel,

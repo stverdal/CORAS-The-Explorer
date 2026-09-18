@@ -391,8 +391,16 @@ function contentWithoutMitigation(content) {
 
 export function createGraphFromDAG(content) {
   const graph = new joint.dia.Graph();
-  if (!content.hasOwnProperty("vertices") || !content.hasOwnProperty("edges")) {
-    return graph;
+  if (
+    !content ||
+    !content.hasOwnProperty("vertices") ||
+    !content.hasOwnProperty("edges")
+  ) {
+    // Callers destructure { threat, treatment }; returning a bare graph here used to
+    // throw a TypeError further up, which surfaced as an empty canvas and no message.
+    throw new Error(
+      "The generated model has no 'vertices' and 'edges' to draw.",
+    );
   }
 
   let prunedContent = contentWithoutDuplicates(content);
