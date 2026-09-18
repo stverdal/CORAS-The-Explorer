@@ -40,10 +40,29 @@ class OpenAICompatibleAdapter(LLMProvider):
             
         try:
             response = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
+
+            # Some providers enforce JSON mode server-side and reject the whole request
+            # when the model's output does not validate, returning nothing usable. The
+            # caller extracts JSON from free text anyway, so retry once without the
+            # constraint rather than losing the entire analysis.
+            if response.status_code == 400 and json_mode:
+                try:
+                    code = response.json().get("error", {}).get("code", "")
+                except Exception:
+                    code = ""
+                if code == "json_validate_failed":
+                    print(
+                        "[LLM] Provider rejected JSON mode; retrying as plain text."
+                    )
+                    payload.pop("response_format", None)
+                    response = requests.post(
+                        f"{self.base_url}/chat/completions", headers=headers, json=payload
+                    )
+
             response.raise_for_status()
-            
+
             return response.json()["choices"][0]["message"]["content"]
-            
+
         except requests.exceptions.HTTPError as e:
             error_details = response.text
             print(f"[LLM Error] Status: {response.status_code} - Details: {error_details}")

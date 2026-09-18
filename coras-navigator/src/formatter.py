@@ -334,8 +334,11 @@ class SimpleJSONFormatter(Formatter):
             return json.dumps(result_dict, indent=2)
               
         except Exception as e:
+            # Returning an empty model here produced a blank canvas and an HTTP 200,
+            # which is indistinguishable from a successful run with nothing to draw.
+            # Raise instead so the reason reaches the user.
             print(f"Error during formatting: {e}")
             if 'response_text' in locals():
                 print(f"Raw output was:\n{response_text}")
-            return json.dumps({"vertices": [], "edges": []})
+            raise Exception(f"The diagram could not be generated: {e}") from e
             
