@@ -378,26 +378,6 @@ def normalise_coras_model(model):
     return model
 
 
-def repair_JSON_text(text: str) -> str:
-    """
-    Repairs the two malformations language models produce most often when asked for
-    JSON: a trailing comma before a closing bracket, and a missing comma between two
-    adjacent objects in an array.
-
-    Parameters:
-    - text: The candidate JSON text
-
-    Returns:
-    - The text with those defects corrected
-    """
-
-    # } { or } \n { with no comma between them
-    text = re.sub(r'\}(\s*)\{', r'},\1{', text)
-    # a comma directly before a closing bracket
-    text = re.sub(r',(\s*[\]\}])', r'\1', text)
-    return text
-
-
 def extract_JSON(text: str):
     try:
         start = text.index('{')

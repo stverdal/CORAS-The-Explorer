@@ -1,5 +1,26 @@
 import json
 import re
+import re
+
+def repair_JSON_text(text: str) -> str:
+    """
+    Repairs the two malformations language models produce most often when asked for
+    JSON: a trailing comma before a closing bracket, and a missing comma between two
+    adjacent objects in an array.
+
+    Parameters:
+    - text: The candidate JSON text
+
+    Returns:
+    - The text with those defects corrected
+    """
+
+    # } { or } \n { with no comma between them
+    text = re.sub(r'\}(\s*)\{', r'},\1{', text)
+    # a comma directly before a closing bracket
+    text = re.sub(r',(\s*[\]\}])', r'\1', text)
+    return text
+
 
 class Formatter:
     """
@@ -273,7 +294,14 @@ class SimpleJSONFormatter(Formatter):
                 
             clean_json = clean_json.strip()
             
-            result_dict = json.loads(clean_json)
+            try:
+                result_dict = json.loads(clean_json)
+            except ValueError:
+                # Same tolerance as the rest of the pipeline: models truncate arrays and
+                # leave trailing commas, and losing the whole diagram to one stray
+                # character is worse than repairing the obvious cases.
+                result_dict = json.loads(repair_JSON_text(clean_json))
+                print("[Formatter] Repaired a malformed JSON response.")
                     
             if "nodes" in result_dict and "vertices" not in result_dict:
                 result_dict["vertices"] = result_dict.pop("nodes")
@@ -329,6 +357,16 @@ class SimpleJSONFormatter(Formatter):
                     print(f"⚠️ Ghost link deleted : {source} -> {target}")
                     
             result_dict["edges"] = safe_edges
+
+            # A model that returns nodes but no edges yields a column of disconnected
+            # boxes. Show what it actually produced so the cause is visible.
+            if result_dict["vertices"] and not safe_edges:
+                print(
+                    "[Formatter] WARNING: the model returned "
+                    f"{len(result_dict['vertices'])} vertices and no usable edges. "
+                    "Raw response follows:"
+                )
+                print(response_text[:2000])
             
             
             return json.dumps(result_dict, indent=2)

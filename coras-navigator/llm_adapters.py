@@ -61,7 +61,15 @@ class OpenAICompatibleAdapter(LLMProvider):
 
             response.raise_for_status()
 
-            return response.json()["choices"][0]["message"]["content"]
+            body = response.json()
+            choice = body["choices"][0]
+            # "length" means the model was cut off mid-answer, which is the usual reason
+            # a long DAG comes back with its edges missing.
+            if choice.get("finish_reason") == "length":
+                print(
+                    "[LLM] WARNING: the response hit the token limit and was truncated."
+                )
+            return choice["message"]["content"]
 
         except requests.exceptions.HTTPError as e:
             error_details = response.text
