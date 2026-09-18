@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 from abc import ABC, abstractmethod
 
 class LLMProvider(ABC):
@@ -13,10 +14,21 @@ class OpenAICompatibleAdapter(LLMProvider):
     """
     Universal adapter for OpenAI, Groq, Ollama (via /v1), LMStudio, etc.
     """
+
+    # Providers apply their own completion limit when none is given, and on
+    # reasoning models the reasoning tokens can exhaust it before any answer is
+    # written, which truncates a CORAS graph after a few characters. Ask for a budget
+    # large enough to hold the whole DAG. Override with CORAS_LLM_MAX_TOKENS.
+    DEFAULT_MAX_TOKENS = 8192
+
     def __init__(self, api_key: str, base_url: str, model: str):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.model = model
+        self.max_tokens = int(
+            os.environ.get("CORAS_LLM_MAX_TOKENS", "").strip()
+            or self.DEFAULT_MAX_TOKENS
+        )
 
     def chat(self, messages: list, system: str = None, json_mode: bool = False) -> str:
         headers = {"Content-Type": "application/json"}
@@ -32,7 +44,8 @@ class OpenAICompatibleAdapter(LLMProvider):
         payload = {
             "model": self.model,
             "messages": payload_messages,
-            "temperature": 0.0
+            "temperature": 0.0,
+            "max_tokens": self.max_tokens
         }
         
         if json_mode:
@@ -45,6 +58,15 @@ class OpenAICompatibleAdapter(LLMProvider):
             # when the model's output does not validate, returning nothing usable. The
             # caller extracts JSON from free text anyway, so retry once without the
             # constraint rather than losing the entire analysis.
+            # Newer APIs renamed max_tokens; swap and retry rather than failing.
+            if response.status_code == 400 and "max_tokens" in payload:
+                if "max_completion_tokens" in response.text or "max_tokens" in response.text:
+                    payload["max_completion_tokens"] = payload.pop("max_tokens")
+                    print("[LLM] Retrying with max_completion_tokens.")
+                    response = requests.post(
+                        f"{self.base_url}/chat/completions", headers=headers, json=payload
+                    )
+
             if response.status_code == 400 and json_mode:
                 try:
                     code = response.json().get("error", {}).get("code", "")

@@ -255,6 +255,9 @@ Pick it in either of two places:
 | `CORAS_LLM_MODEL`     | Model name as the provider spells it                                 | `qwen2.5:72b`  |
 | `CORAS_LLM_API_KEY`   | API key for the external service. Never sent to the browser.         | _(empty)_      |
 | `CORAS_LLM_BASE_URL`  | Endpoint for `custom_openai_compatible` (LMStudio, vLLM, …)          | _(empty)_      |
+| `CORAS_LLM_MAX_TOKENS`| Completion budget per request                                        | `8192`         |
+
+If the backend logs `the response hit the token limit and was truncated`, the model ran out of budget before finishing the diagram. Raise `CORAS_LLM_MAX_TOKENS`, or pick a model that does not spend its budget on reasoning tokens before answering.
 
 The Model Name dropdown in _Settings_ is populated from the provider itself through `POST /coras_navigator_api/models`, using the server's key unless you supply your own. Speech, embedding and moderation models are filtered out, since they cannot answer a chat completion. If the provider cannot be reached, the dropdown falls back to a small built-in list and shows why.
 
