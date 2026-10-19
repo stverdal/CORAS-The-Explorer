@@ -861,7 +861,10 @@ class Navigator extends React.Component {
         console.error("Erreur globale ThreatModel:", error);
         this.setState({
           loading: false,
-          modelStatusMessage: "Something went wrong.",
+          // The server already explains what failed; repeating "Something went wrong"
+          // threw that away and sent the user to the logs for no reason.
+          modelStatusMessage:
+            error && error.message ? error.message : "Something went wrong.",
           displayModelStatusMessage: true,
         });
       });
@@ -1166,24 +1169,18 @@ class Navigator extends React.Component {
         "llama3:8b",
         "mistral:latest",
       ],
+      // Fallback only: the dropdown is populated from the provider itself through
+      // /coras_navigator_api/models. Chat-capable models only - speech-to-text and
+      // embedding models cannot answer these prompts and must not be offered here.
       openai: [
-        "gpt-5.5",
-        "gpt-5.4",
-        "gpt-5.4-mini",
-        "gpt-oss-120b",
-        "gpt-oss-20b",
         "gpt-4o",
         "gpt-4o-mini",
         "gpt-4-turbo",
-        "gpt-3.5-turbo",
       ],
       groq: [
-        "llama-3.3-70b-versatile",
         "llama-3.1-8b-instant",
         "openai/gpt-oss-120b",
         "openai/gpt-oss-20b",
-        "whisper-large-v3",
-        "whisper-large-v3-turbo",
       ],
       custom_openai_compatible: [],
     };

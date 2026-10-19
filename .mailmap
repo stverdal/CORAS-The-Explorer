@@ -1,0 +1,8 @@
+# Normalises the several identities each contributor has committed under, so
+# `git shortlog -sn` and similar report one entry per person.
+Simeon Tverdal <simeon.tverdal@sintef.no> <Simeon.Tverdal@sintef.no>
+Simeon Tverdal <simeon.tverdal@sintef.no> <60609832+stverdal@users.noreply.github.com>
+Simeon Tverdal <simeon.tverdal@sintef.no> simeont <Simeon.Tverdal@sintef.no>
+Simeon Tverdal <simeon.tverdal@sintef.no> stverdal <simeon.tverdal@sintef.no>
+Håkon Antonsen <hakon.antonsen@sintef.no> <haakon@antons1.net>
+Morgan Gillette <morgan.gillette@sintef.no> <152968781+morgangte@users.noreply.github.com>

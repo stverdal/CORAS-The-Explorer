@@ -12,6 +12,9 @@ const RESIZE_ELEMENTS = new Set([
   "threat_scenario",
   "unwanted_incident",
   "treatment",
+  // A law label carries the article reference and the sentence explaining why it was
+  // triggered, so it is among the longest in the graph and must grow to fit.
+  "law",
 ]);
 const ELEMENT_TEXT_LINE_THRESHOLD = 25;
 

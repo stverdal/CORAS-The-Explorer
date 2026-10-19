@@ -351,6 +351,19 @@ class SimpleJSONFormatter(Formatter):
                             "vulnerabilities": []
                         })
                         
+                    elif s_type == "law" and t_type == "unwanted_incident":
+                        # The flow rules and the example both specify
+                        # unwanted_incident -> law, but models emit it reversed. Edge
+                        # direction decides the layout rank, so a law pointing at an
+                        # incident is ranked before it and drifts to the wrong side of
+                        # the diagram. Normalise rather than drop.
+                        print(f"⚠️ Law edge reversed : {source} -> {target}. Correcting...")
+                        safe_edges.append({
+                            "source": target,
+                            "target": source,
+                            "vulnerabilities": []
+                        })
+
                     else:
                         safe_edges.append(edge)
                 else:
