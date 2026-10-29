@@ -421,6 +421,16 @@ class Navigator extends React.Component {
     }));
   };
 
+  // OpenAI and Groq reject an unauthenticated /models call, so there is nothing to
+  // list until a key exists. Asking anyway returned 401 the instant the provider was
+  // switched, which emptied the dropdown and made it look broken.
+  providerNeedsKey = (provider) => provider === "openai" || provider === "groq";
+
+  canListModels = (provider, apiKey) =>
+    !this.providerNeedsKey(provider) ||
+    Boolean(apiKey) ||
+    this.state.serverApiKeyConfigured;
+
   handleLlmSettingChange = (event) => {
     const { name, value } = event.target;
     if (name === "llmProvider") {
@@ -432,13 +442,21 @@ class Navigator extends React.Component {
           availableModels: [],
           modelsError: "",
         },
-        this.fetchAvailableModels,
+        () => {
+          if (this.canListModels(value, this.state.llmApiKey)) {
+            this.fetchAvailableModels();
+          }
+        },
       );
     } else if (name === "llmApiKey" || name === "llmBaseUrl") {
       // A different key or endpoint can expose a different catalogue.
       this.setState({ [name]: value }, () => {
         clearTimeout(this.modelRefreshTimer);
-        this.modelRefreshTimer = setTimeout(this.fetchAvailableModels, 600);
+        this.modelRefreshTimer = setTimeout(() => {
+          if (this.canListModels(this.state.llmProvider, this.state.llmApiKey)) {
+            this.fetchAvailableModels();
+          }
+        }, 600);
       });
     } else {
       this.setState({
@@ -1303,6 +1321,24 @@ class Navigator extends React.Component {
                 </select>
               </div>
 
+              {this.state.llmProvider !== "ollama" && (
+                <div className="input-group">
+                  <label>API Key</label>
+                  <input
+                    type="password"
+                    name="llmApiKey"
+                    value={this.state.llmApiKey}
+                    onChange={this.handleLlmSettingChange}
+                    placeholder={
+                      this.state.serverApiKeyConfigured
+                        ? "Using the key configured on the server"
+                        : "sk-..."
+                    }
+                    autoComplete="off"
+                  />
+                </div>
+              )}
+
               <div className="input-group">
                 <label>
                   Model Name
@@ -1365,25 +1401,18 @@ class Navigator extends React.Component {
                     {liveModels.length} models available from this provider.
                   </p>
                 )}
+                {!this.state.modelsError &&
+                  liveModels.length === 0 &&
+                  !this.state.modelsLoading &&
+                  !this.canListModels(
+                    this.state.llmProvider,
+                    this.state.llmApiKey,
+                  ) && (
+                    <p className="models-hint">
+                      Enter your API key above to load the model list.
+                    </p>
+                  )}
               </div>
-
-              {this.state.llmProvider !== "ollama" && (
-                <div className="input-group">
-                  <label>API Key</label>
-                  <input
-                    type="password"
-                    name="llmApiKey"
-                    value={this.state.llmApiKey}
-                    onChange={this.handleLlmSettingChange}
-                    placeholder={
-                      this.state.serverApiKeyConfigured
-                        ? "Using the key configured on the server"
-                        : "sk-..."
-                    }
-                    autoComplete="off"
-                  />
-                </div>
-              )}
 
               <div className="save-and-close-btn">
                 <button onClick={this.toggleSettingsModal}>Save & Close</button>
