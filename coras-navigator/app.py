@@ -341,6 +341,39 @@ def check_embedding_backend():
     print(f"Embedding backend ready: {EMBEDDING_MODEL} at {url}")
 
 
+def check_nvd_files_present():
+    """
+    Fails fast when a requested NVD year has not been pruned yet.
+
+    The downloader leaves raw archives in rag-docs/NVD-2019-2026/ and
+    NVD_data_prunning.py turns those into the per-year files loaded here. Skip the
+    pruning step and the gap only surfaces as a FileNotFoundError from inside
+    Chroma's loader, after the CAPEC and compliance stores have already been built.
+    """
+
+    missing = [
+        year for year in NVD_YEARS
+        if not os.path.exists(f"./rag-docs/nvdcve-2.0-{year}.json")
+    ]
+    if not missing:
+        return
+
+    raw_dir = "./rag-docs/NVD-2019-2026/"
+    downloaded = os.path.isdir(raw_dir) and any(
+        name.endswith(".json") for name in os.listdir(raw_dir)
+    )
+    remedy = (
+        "  make update-nvd\n" if downloaded
+        else "  make download-rag-documents && make update-nvd\n"
+    )
+    raise SystemExit(
+        f"\nNo pruned NVD data for: {', '.join(missing)}\n"
+        f"Build it with:\n{remedy}"
+        f"Or embed only the years you have:\n"
+        f"  make build-stores CORAS_NVD_YEARS=<years>\n"
+    )
+
+
 def load_all_vector_stores():
     """
     Builds or loads every vector store the Navigator needs.
@@ -350,6 +383,7 @@ def load_all_vector_stores():
     """
 
     check_embedding_backend()
+    check_nvd_files_present()
 
     capec_rag.load_files([(
         "./rag-docs/capec-abstract.txt",
