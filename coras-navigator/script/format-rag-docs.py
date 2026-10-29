@@ -104,6 +104,7 @@ def get_cwe_dict(cwe_files: list[str]):
 def construct_capec_detailed(filename_in: str, filename_out_abstract: str, filename_out_detailed: str, cwe_dict) -> None:
     count = 0
     capec_dict = {}
+    missing_cwes = set()
 
     with open(filename_in, "r") as file_in, open(filename_out_abstract, "w") as file_out, open(filename_out_detailed, "w") as json_file:
         reader = csv.reader(file_in)
@@ -120,7 +121,13 @@ def construct_capec_detailed(filename_in: str, filename_out_abstract: str, filen
             for mitigation in mitigation_list:
                 mitigations += f"- {mitigation}\n"
             for cwe in cwe_list:
-                cwes += f"- {cwe_dict[cwe]}\n"
+                # CAPEC cites weaknesses that are not members of the three CWE views
+                # loaded above (deprecated entries, or ones filed only under other
+                # views). Keep the bare reference: a missing description is worth far
+                # less than aborting the whole document build.
+                cwes += f"- {cwe_dict.get(cwe, f'CWE-{cwe}')}\n"
+                if cwe not in cwe_dict:
+                    missing_cwes.add(cwe)
 
             text_detailed = f"[CAPEC-{row[Capec.ID]}]\n**Attack pattern**: {row[Capec.NAME]}\n**Description**: {row[Capec.DESCRIPTION]}\n**Vulnerabilities**:\n{cwes}**Mitigations**:\n{mitigations}"
             capec_dict[row[Capec.ID]] = text_detailed
@@ -129,6 +136,10 @@ def construct_capec_detailed(filename_in: str, filename_out_abstract: str, filen
         json.dump(capec_dict, json_file, indent=4) 
         print(f"Saved {count} CAPEC entries (abstract) to '{filename_out_abstract}'.")
         print(f"Saved {count} CAPEC entries (detailed) to '{filename_out_detailed}'.")
+        if missing_cwes:
+            print(f"Note: {len(missing_cwes)} CWE ids referenced by CAPEC are absent from the "
+                  f"loaded views and were kept as bare references: "
+                  f"{', '.join('CWE-' + c for c in sorted(missing_cwes, key=int))}")
 
 if __name__ == "__main__":
     cwe_dict = get_cwe_dict([
