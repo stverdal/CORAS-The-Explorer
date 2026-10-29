@@ -766,13 +766,20 @@ class Navigator extends React.Component {
     )
       .then((response) => response.json())
       .then((data) => {
-        let safeAnalysis = data.analysis
-          ? String(data.analysis)
-          : "No report generated.";
+        let safeAnalysis = data.analysis ? String(data.analysis) : "";
         safeAnalysis = safeAnalysis.replace(
           /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi,
           "",
         );
+        // A reasoning model can answer with nothing but a <think> block, which the
+        // strip above reduces to whitespace. Checking before it left the pane blank
+        // with no indication that anything had gone wrong.
+        if (!safeAnalysis.trim()) {
+          safeAnalysis =
+            "No report generated. The model returned no usable text — if it is a " +
+            "reasoning model, check the backend log and try raising " +
+            "CORAS_LLM_MAX_TOKENS.";
+        }
         if (this._isMounted) {
           this.setState(
             {

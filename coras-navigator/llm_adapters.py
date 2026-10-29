@@ -1,7 +1,32 @@
 import requests
 import json
 import os
+import re
 from abc import ABC, abstractmethod
+
+# Reasoning models return their chain of thought alongside the answer: inline in
+# <think> tags, or in a field of its own beside the content. Neither is part of the
+# report, and none of it is JSON, so it has to come off before the formatter or the
+# assessors see it.
+_THINK_BLOCK = re.compile(r"<(think|thinking|reasoning)\b[^>]*>.*?</\1\s*>", re.S | re.I)
+_UNCLOSED_THINK = re.compile(r"<(think|thinking|reasoning)\b[^>]*>.*\Z", re.S | re.I)
+
+
+def strip_reasoning(text: str) -> str:
+    """
+    Removes a reasoning model's thinking from a completion.
+
+    Handles the truncated case too: a response cut off mid-thought opens the block and
+    never closes it, and everything after that tag is thinking, so it is dropped
+    rather than handed to a JSON parser.
+    """
+
+    if not text:
+        return ""
+
+    cleaned = _THINK_BLOCK.sub("", text)
+    cleaned = _UNCLOSED_THINK.sub("", cleaned)
+    return cleaned.strip()
 
 class LLMProvider(ABC):
     """Universal interface for all LLM providers."""
@@ -85,13 +110,33 @@ class OpenAICompatibleAdapter(LLMProvider):
 
             body = response.json()
             choice = body["choices"][0]
+            message = choice.get("message", {}) or {}
+            content = strip_reasoning(message.get("content") or "")
+
+            # Groq and others return a reasoning model's thinking in its own field and
+            # leave content empty when the answer never arrived. For a prose report the
+            # reasoning is worth more than nothing; for JSON it would only produce a
+            # confusing parse failure, so leave that to fail on its own terms.
+            if not content and not json_mode:
+                thoughts = strip_reasoning(
+                    message.get("reasoning") or message.get("reasoning_content") or ""
+                )
+                if thoughts:
+                    print(
+                        "[LLM] WARNING: the model returned reasoning but no answer; "
+                        "using the reasoning text."
+                    )
+                    content = thoughts
+
             # "length" means the model was cut off mid-answer, which is the usual reason
-            # a long DAG comes back with its edges missing.
+            # a long DAG comes back with its edges missing. On a reasoning model the
+            # thinking is what consumed the budget.
             if choice.get("finish_reason") == "length":
                 print(
-                    "[LLM] WARNING: the response hit the token limit and was truncated."
+                    f"[LLM] WARNING: the response hit the {self.max_tokens} token limit "
+                    f"and was truncated. Raise it with CORAS_LLM_MAX_TOKENS."
                 )
-            return choice["message"]["content"]
+            return content
 
         except requests.exceptions.HTTPError as e:
             error_details = response.text
@@ -149,8 +194,14 @@ class OllamaNativeAdapter(LLMProvider):
         try:
             response = requests.post(f"{self.base_url}/api/chat", json=payload)
             response.raise_for_status()
-            
-            return response.json()["message"]["content"]
+
+            message = response.json().get("message", {}) or {}
+            content = strip_reasoning(message.get("content") or "")
+            # Ollama puts a thinking model's reasoning in its own field; fall back to it
+            # rather than returning an empty report.
+            if not content and not json_mode:
+                content = strip_reasoning(message.get("thinking") or "")
+            return content
             
         except requests.exceptions.HTTPError as e:
             error_details = response.text
