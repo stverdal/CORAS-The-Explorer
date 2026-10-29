@@ -47,9 +47,13 @@ const EditorToolBar = ({ beginMoveElement, svgs, toggleInfoBox, currentPerspecti
                         if(svg.attrs)
                             Object.keys(svg.attrs).map((key, index) => shape.attr(key, svg.attrs[key]));
 
-                        const styles = svg.perspectives[currentPerspective]; 
-                        console.log(`STYLES `, styles)
-                        Object.keys(styles).forEach((ref) => shape.attr(ref, styles[ref]));
+                        // Every tool defines perspectives 0-2; anything outside that
+                        // range left styles undefined and Object.keys threw "Cannot
+                        // convert undefined or null to object", killing the drag.
+                        const styles = svg.perspectives[currentPerspective] || svg.perspectives[0];
+                        if (styles) {
+                            Object.keys(styles).forEach((ref) => shape.attr(ref, styles[ref]));
+                        }
                         shape.attr("text/text", svg.text);
                         shape.attr("value/text", "");
                         shape.set('perspective', currentPerspective); // Unsure if needed
@@ -71,7 +75,7 @@ const EditorToolBar = ({ beginMoveElement, svgs, toggleInfoBox, currentPerspecti
                         beginMoveElement(shape, svg.width, svg.height)
                     }}
                     key={i} >
-                        <img src={svg.perspectives[currentPerspective]["icon/href"]} height={svg.iconHeight || 40} className="editor-toolbox__icon" />
+                        <img src={(svg.perspectives[currentPerspective] || svg.perspectives[0] || {})["icon/href"]} height={svg.iconHeight || 40} className="editor-toolbox__icon" />
                         <div>{svg.text}</div>
                     </div>) :
                 null}

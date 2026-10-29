@@ -43,9 +43,11 @@ function createElementFromDAG(type, id, label, posX, posY) {
   }
 
   const formatted = formatElement(label);
-  const styles = svg.perspectives[0];
+  const styles = svg.perspectives && svg.perspectives[0];
 
-  Object.keys(styles).forEach((ref) => shape.attr(ref, styles[ref]));
+  if (styles) {
+    Object.keys(styles).forEach((ref) => shape.attr(ref, styles[ref]));
+  }
 
   if (type === "law") {
     let source = "";
