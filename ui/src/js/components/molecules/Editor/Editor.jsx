@@ -1042,48 +1042,64 @@ class Editor extends React.Component {
   }
 
   getSvg() {
-    let svgElement = this.paper.svg;
-    const toolElems = svgElement.getElementsByClassName("link-tools");
-    const arrowElems = svgElement.getElementsByClassName("marker-arrowhead");
+    // Work on a clone. The previous version called remove() on the live paper, so
+    // exporting permanently stripped the arrowheads off the diagram on screen.
+    const svgElement = this.paper.svg.cloneNode(true);
 
-    const toolArray = Array.from(toolElems);
-    const arrowArray = Array.from(arrowElems);
+    Array.from(svgElement.getElementsByClassName("link-tools")).forEach((el) =>
+      el.remove(),
+    );
+    Array.from(svgElement.getElementsByClassName("marker-arrowhead")).forEach(
+      (el) => el.remove(),
+    );
 
-    toolArray.forEach((elem) => elem.remove());
-    arrowArray.forEach((elem) => elem.remove());
+    // Size the export to the diagram, not to the window. getContentArea returns the
+    // bounding box of every cell in local coordinates, so a graph scrolled out of
+    // view is included instead of cropped at the edge of the viewport.
+    const PADDING = 40;
+    let area = null;
+    try {
+      area = this.paper.getContentArea();
+    } catch (e) {
+      area = null;
+    }
+    if (!area || !area.width || !area.height) {
+      area = {
+        x: 0,
+        y: 0,
+        width: this.paperRef.current.offsetWidth,
+        height: this.paperRef.current.offsetHeight,
+      };
+    }
 
-    // Add other standard font
-    // svgElement.style.fontFamily = "Oswald, sans-serif";
+    const x = Math.floor(area.x - PADDING);
+    const y = Math.floor(area.y - PADDING);
+    const width = Math.ceil(area.width + PADDING * 2);
+    const height = Math.ceil(area.height + PADDING * 2);
 
-    // Get svg source.
-    let serializer = new XMLSerializer();
+    svgElement.setAttribute("width", `${width}px`);
+    svgElement.setAttribute("height", `${height}px`);
+    svgElement.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    svgElement.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+
+    // A standalone file has no page behind it, and a transparent background prints
+    // as black in some viewers.
+    const background = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "rect",
+    );
+    background.setAttribute("x", String(x));
+    background.setAttribute("y", String(y));
+    background.setAttribute("width", String(width));
+    background.setAttribute("height", String(height));
+    background.setAttribute("fill", "#ffffff");
+    svgElement.insertBefore(background, svgElement.firstChild);
+
+    const serializer = new XMLSerializer();
     let source = serializer.serializeToString(svgElement);
-
-    // Add name spaces.
-    if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
-      source = source.replace(
-        /^<svg/,
-        '<svg xmlns="http://www.w3.org/2000/svg"',
-      );
-    }
-    if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
-      source = source.replace(
-        /^<svg/,
-        '<svg xmlns:xlink="http://www.w3.org/1999/xlink"',
-      );
-    }
-
-    const width = this.paperRef.current.offsetWidth;
-    const height = this.paperRef.current.offsetHeight;
-
-    // Fix svg size
-    let search =
-      /(<svg xmlns="\S*" xmlns:xlink="\S*" version="\S*" id="\S*" width=)\S*( height=)\S*(>)/gm;
-    let replace = `$1"${width}px"$2"${height}px"$3`;
-    source = source.replace(search, replace);
-
-    // Add xml declaration
     source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
     return {
       source: source,
       width: width,

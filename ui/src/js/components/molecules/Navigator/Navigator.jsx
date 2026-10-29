@@ -352,25 +352,35 @@ class Navigator extends React.Component {
   }
 
   generatePdfReport() {
-    let svg = this.editorRef.current.getSvg();
+    const svg = this.editorRef.current.getSvg();
     const report = new CorasReport();
 
     report
-      .addSubTitle("Input description of the target of analysis: ")
+      .addSubTitle("Input description of the target of analysis")
       .addParagraph(this.state.contextDescription)
-      .addSubTitle("Structured description of the target of analysis: ")
+      .addSubTitle("Structured description of the target of analysis")
       .addParagraph(this.state.summary)
-      .addSubTitle("Retrieved context for the risk analysis: ")
+      .addSubTitle("Retrieved context for the risk analysis")
       .addParagraph(this.state.retrievedContext)
-      .addSubTitle("Risk analysis: ")
-      .addParagraph(this.state.analysis)
-      .addSubTitle("CORAS Threat model: ");
+      .addSubTitle("Risk analysis")
+      .addParagraph(this.state.analysis);
 
-    svgStringToImage(svg.source, 2000, 2000).then((pngSrc) => {
-      report
-        .addPNG(pngSrc, svg.width, svg.height, "threat_model")
-        .generate("report.pdf");
-    });
+    // The diagram goes in at its true aspect ratio, on a page of its own. A raster
+    // image cannot be zoomed usefully, so the SVG is saved beside the PDF: it opens
+    // in any browser and stays sharp at any magnification.
+    svgStringToImage(svg.source, svg.width, svg.height)
+      .then((pngSrc) => {
+        report
+          .addDiagram(pngSrc, svg.width, svg.height, "threat_model")
+          .generate("coras-report.pdf");
+      })
+      .catch((error) => {
+        console.error("Could not render the diagram into the report:", error);
+        report.generate("coras-report.pdf");
+      })
+      .then(() => {
+        this.editorRef.current.downloadSvg("coras-threat-model");
+      });
   }
 
   onOpenBlankEditorButtonClick = () => {
