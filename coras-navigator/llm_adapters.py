@@ -28,6 +28,66 @@ def strip_reasoning(text: str) -> str:
     cleaned = _UNCLOSED_THINK.sub("", cleaned)
     return cleaned.strip()
 
+# Ollama counts the prompt and the generated answer against the same window, so a
+# prompt that fills num_ctx leaves nothing to answer with, and llama.cpp then drops
+# the oldest tokens -- which is the system prompt, i.e. the instructions. Nothing
+# reported that, so a large prompt looked like a model that had stopped following
+# orders: missing law vertices, thin diagrams, empty reports.
+DEFAULT_NUM_CTX = 16384
+
+# Reserved for the answer. A reasoning model spends its thinking from the same
+# window, so this is a floor, not a generous allowance.
+OUTPUT_RESERVE_TOKENS = 3072
+
+
+def resolve_num_ctx() -> int:
+    """
+    Returns the Ollama context window, overridable with CORAS_LLM_NUM_CTX.
+
+    Raising it costs VRAM: the KV cache grows linearly, and a window the GPU cannot
+    hold spills to system memory, which is slow rather than broken.
+    """
+
+    return int(
+        os.environ.get("CORAS_LLM_NUM_CTX", "").strip() or DEFAULT_NUM_CTX
+    )
+
+
+def estimate_tokens(text: str) -> int:
+    """
+    Approximates a token count at four characters per token.
+
+    That is the same ratio the prompt budgets in assessor.py are built on. It is a
+    rough figure, so it is used only to decide whether to warn.
+    """
+
+    return (len(text) + 3) // 4
+
+
+def prompt_token_estimate(messages: list, system: str = None) -> int:
+    chars = len(system or "")
+    for message in messages or []:
+        chars += len(message.get("content") or "")
+    return (chars + 3) // 4
+
+
+def warn_if_prompt_crowds_context(prompt_tokens: int, num_ctx: int, label: str):
+    """
+    Reports a prompt that leaves too little of the context window for an answer.
+    """
+
+    if prompt_tokens + OUTPUT_RESERVE_TOKENS <= num_ctx:
+        return
+
+    print(
+        f"[LLM] WARNING: the {label} prompt is about {prompt_tokens} tokens and the "
+        f"context window is {num_ctx}, leaving under {OUTPUT_RESERVE_TOKENS} for the "
+        f"answer. Ollama drops the oldest tokens to fit, which silently removes the "
+        f"instructions. Raise the window with CORAS_LLM_NUM_CTX (costs VRAM) or "
+        f"select fewer laws."
+    )
+
+
 class LLMProvider(ABC):
     """Universal interface for all LLM providers."""
     
@@ -75,6 +135,11 @@ class OpenAICompatibleAdapter(LLMProvider):
         
         if json_mode:
             payload["response_format"] = {"type": "json_object"}
+
+        prompt_tokens = prompt_token_estimate(payload_messages)
+        if prompt_tokens > 30000:
+            print(f"[LLM] Prompt is about {prompt_tokens} tokens; check it against "
+                  f"{self.model}'s context limit.")
             
         try:
             response = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
@@ -171,6 +236,7 @@ class OllamaNativeAdapter(LLMProvider):
     def __init__(self, base_url: str, model: str):
         self.base_url = base_url.rstrip("/").replace("/v1", "")
         self.model = model
+        self.num_ctx = resolve_num_ctx()
 
     def chat(self, messages: list, system: str = None, json_mode: bool = False) -> str:
         payload_messages = []
@@ -183,14 +249,18 @@ class OllamaNativeAdapter(LLMProvider):
             "messages": payload_messages,
             "stream": False,
             "options": {
-                "num_ctx": 16384,
+                "num_ctx": self.num_ctx,
                 "temperature": 0.0
             }
         }
         
         if json_mode:
             payload["format"] = "json"
-            
+
+        warn_if_prompt_crowds_context(
+            prompt_token_estimate(payload_messages), self.num_ctx, "Ollama"
+        )
+
         try:
             response = requests.post(f"{self.base_url}/api/chat", json=payload)
             response.raise_for_status()

@@ -581,11 +581,17 @@ class LegalAssessor:
     Agent responsible of generating textual legal slection and analysis.
     """
 
-    # Character budgets for the two large blocks in the assessment prompt. Roughly four
-    # characters per token, so this keeps the pair near 15k tokens with five laws
-    # selected, leaving room for the system description and the technical report.
-    LAW_CONTEXT_CHAR_BUDGET = 6000
-    LEGAL_CONTEXT_CHAR_BUDGET = 30000
+    # Character budgets for the two large blocks in the assessment prompt, at roughly
+    # four characters per token.
+    #
+    # The previous pair (6000 and 30000) built a 76k-character prompt with all five
+    # laws selected -- about 19k tokens against Ollama's 16k window, so the prompt was
+    # over the window before the model wrote anything and llama.cpp dropped the
+    # instructions to make it fit. The law background is the cheapest block to cut:
+    # it is framing only, because the prompt below confines the assessment to the
+    # articles in <legal_context>, which is what the RAG actually retrieved.
+    LAW_CONTEXT_CHAR_BUDGET = 1200
+    LEGAL_CONTEXT_CHAR_BUDGET = 24000
 
     # The UI sends CyberResilience_Act while laws_contexts.json keys it
     # Cyber_Resilience_Act, so the act was silently excluded from every assessment.
