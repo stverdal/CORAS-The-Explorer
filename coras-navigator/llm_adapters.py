@@ -2,6 +2,7 @@ import requests
 import json
 import os
 import re
+from urllib.parse import urlparse
 from abc import ABC, abstractmethod
 
 # Reasoning models return their chain of thought alongside the answer: inline in
@@ -88,6 +89,36 @@ def warn_if_prompt_crowds_context(prompt_tokens: int, num_ctx: int, label: str):
     )
 
 
+# A provider that refuses the requested completion ceiling says what it will accept
+# ("must be less than or equal to 16384"). Reading that number back is better than
+# guessing per model, because the cap is per model and changes without notice.
+_LIMIT_HINT = re.compile(
+    r"(?:less than or equal to|at most|maximum(?:\s+of)?|cannot exceed|must be\s*<=?)"
+    r"[^0-9]{0,24}(\d{3,7})",
+    re.I,
+)
+
+
+def cap_from_limit_error(body: str, requested: int):
+    """
+    Returns the ceiling a provider named when rejecting ours, or None.
+
+    Only a number below what was asked for counts: anything else is a different
+    complaint that happens to carry a digit.
+    """
+
+    if not body or not requested:
+        return None
+
+    lowered = body.lower()
+    if "max_tokens" not in lowered and "max_completion_tokens" not in lowered:
+        return None
+
+    found = [int(m.group(1)) for m in _LIMIT_HINT.finditer(body)]
+    below = [value for value in found if 0 < value < requested]
+    return min(below) if below else None
+
+
 class LLMProvider(ABC):
     """Universal interface for all LLM providers."""
     
@@ -101,19 +132,66 @@ class OpenAICompatibleAdapter(LLMProvider):
     """
 
     # Providers apply their own completion limit when none is given, and on
-    # reasoning models the reasoning tokens can exhaust it before any answer is
-    # written, which truncates a CORAS graph after a few characters. Ask for a budget
-    # large enough to hold the whole DAG. Override with CORAS_LLM_MAX_TOKENS.
+    # reasoning models the reasoning tokens come out of this same budget before any
+    # answer is written, which truncates a CORAS graph after a few characters.
+    #
+    # Groq's ceiling is per model -- 65,536 on the gpt-oss models, 32,768 on Llama
+    # 3.3 70B, 16,384 on some preview models -- so there is no single number that is
+    # both generous and always valid. Ask for a large one and let a model that allows
+    # less say so: chat() reads the cap out of the rejection and retries.
+    # Override with CORAS_LLM_MAX_TOKENS.
     DEFAULT_MAX_TOKENS = 8192
+    PROVIDER_MAX_TOKENS = {"groq": 32768}
 
-    def __init__(self, api_key: str, base_url: str, model: str):
+    @staticmethod
+    def provider_from_url(base_url: str) -> str:
+        """
+        Names the provider behind a base URL, so a custom endpoint pointed at Groq
+        gets the same budget as the built-in choice.
+        """
+
+        host = (urlparse(base_url).hostname or "").lower()
+        if host == "groq.com" or host.endswith(".groq.com"):
+            return "groq"
+        if host == "openai.com" or host.endswith(".openai.com"):
+            return "openai"
+        return "custom"
+
+    def __init__(self, api_key: str, base_url: str, model: str, provider: str = None):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.model = model
+        self.provider = provider or self.provider_from_url(self.base_url)
         self.max_tokens = int(
             os.environ.get("CORAS_LLM_MAX_TOKENS", "").strip()
-            or self.DEFAULT_MAX_TOKENS
+            or self.PROVIDER_MAX_TOKENS.get(self.provider, self.DEFAULT_MAX_TOKENS)
         )
+
+    def _relax_token_limit(self, payload: dict, body: str) -> bool:
+        """
+        Adjusts the completion-limit field after a 400 and reports whether to retry.
+
+        Lowers our ceiling to the one the provider named, or renames the field for an
+        API that no longer accepts max_tokens.
+        """
+
+        key = "max_completion_tokens" if "max_completion_tokens" in payload else "max_tokens"
+
+        capped = cap_from_limit_error(body, payload.get(key))
+        if capped:
+            print(f"[LLM] {self.model} allows at most {capped} completion tokens; "
+                  f"retrying with that.")
+            payload[key] = capped
+            return True
+
+        if key == "max_tokens" and (
+            "max_completion_tokens" in body or "max_tokens" in body
+        ):
+            payload["max_completion_tokens"] = payload.pop("max_tokens")
+            print("[LLM] Retrying with max_completion_tokens.")
+            return True
+
+        return False
 
     def chat(self, messages: list, system: str = None, json_mode: bool = False) -> str:
         headers = {"Content-Type": "application/json"}
@@ -144,19 +222,23 @@ class OpenAICompatibleAdapter(LLMProvider):
         try:
             response = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
 
+            # We deliberately ask for a large completion budget, so settle the two
+            # ways a provider can refuse it: a model whose ceiling is lower than
+            # ours, and a newer API that renamed the field. Each is fixed once, so
+            # the loop cannot spin.
+            for _ in range(2):
+                if response.status_code != 400:
+                    break
+                if not self._relax_token_limit(payload, response.text):
+                    break
+                response = requests.post(
+                    f"{self.base_url}/chat/completions", headers=headers, json=payload
+                )
+
             # Some providers enforce JSON mode server-side and reject the whole request
             # when the model's output does not validate, returning nothing usable. The
             # caller extracts JSON from free text anyway, so retry once without the
             # constraint rather than losing the entire analysis.
-            # Newer APIs renamed max_tokens; swap and retry rather than failing.
-            if response.status_code == 400 and "max_tokens" in payload:
-                if "max_completion_tokens" in response.text or "max_tokens" in response.text:
-                    payload["max_completion_tokens"] = payload.pop("max_tokens")
-                    print("[LLM] Retrying with max_completion_tokens.")
-                    response = requests.post(
-                        f"{self.base_url}/chat/completions", headers=headers, json=payload
-                    )
-
             if response.status_code == 400 and json_mode:
                 try:
                     code = response.json().get("error", {}).get("code", "")
