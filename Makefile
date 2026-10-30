@@ -18,7 +18,12 @@ CORAS_LLM_MODEL ?=
 CORAS_LLM_BASE_URL ?=
 CORAS_LLM_API_KEY ?=
 # Completion budget per request. Raise it if diagrams come back truncated.
+# Empty = 32768 on Groq, 8192 elsewhere.
 CORAS_LLM_MAX_TOKENS ?=
+# Ollama context window, covering the prompt and the answer together. Empty = 16384.
+# Raising it grows the KV cache, so a window the GPU cannot hold spills to system
+# memory and gets slow. The API warns when a prompt crowds the window.
+CORAS_LLM_NUM_CTX ?=
 # Which NVD years to embed. Empty = 2022-2026. One year is enough for a smoke test.
 CORAS_NVD_YEARS ?=
 export CORAS_NVD_YEARS
@@ -27,6 +32,7 @@ export CORAS_LLM_MODEL
 export CORAS_LLM_BASE_URL
 export CORAS_LLM_API_KEY
 export CORAS_LLM_MAX_TOKENS
+export CORAS_LLM_NUM_CTX
 
 # Where the API binds, and where the UI looks for it. Both default to localhost.
 # On a server whose browser is elsewhere:
